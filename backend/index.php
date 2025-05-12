@@ -36,7 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit();
 }
 
-// GLOBALNI AUTH GUARD
+// Global Auth Guard
 Flight::route('/*', function () {
     $publicRoutes = [
         '/auth/login',
