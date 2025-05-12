@@ -63,7 +63,6 @@ const Sidebar = () => {
                 <ListItem disablePadding>
                     <ListItemButton onClick={handleLogout}>
                         <ListItemIcon>
-                            <LogoutIcon />
                         </ListItemIcon>
                         <ListItemText primary="Logout" />
                     </ListItemButton>
