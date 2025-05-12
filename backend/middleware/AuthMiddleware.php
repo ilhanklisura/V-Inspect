@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../services/AuthService.php';
+require_once __DIR__ . '/../rest/services/AuthService.php';
 
 class AuthMiddleware {
     public static function authenticate() {

@@ -2,7 +2,7 @@
 require './vendor/autoload.php';
 
 require_once 'rest/config.php';
-require_once 'data/Roles.php';
+require_once 'Roles.php';
 
 require_once 'rest/services/UserService.php';
 require_once 'rest/services/AuthService.php';

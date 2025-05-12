@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../dao/AuthDao.php';
 require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../Roles.php';
+require_once __DIR__ . '/../../Roles.php';
 use \Firebase\JWT\JWT;
 use \Firebase\JWT\Key;
 
