@@ -77,19 +77,21 @@
 
         // Funkcija za preusmjeravanje na odgovarajući dashboard
         function redirectBasedOnRole(role) {
-          const baseUrl = "http://localhost:8888/V-Inspect/frontend/pages";
-
-          console.log(`Redirecting user with role: ${role}`);
-
           switch (role) {
             case "admin":
-              window.location.href = `${baseUrl}/admin/dashboard.html`;
+              console.log("Redirecting to admin dashboard");
+              window.location.href =
+                "http://localhost:8888/V-Inspect/frontend/pages/admin/dashboard.html";
               break;
             case "vehicle_owner":
-              window.location.href = `${baseUrl}/vehicle-owner/dashboard.html`;
+              console.log("Redirecting to vehicle owner dashboard");
+              window.location.href =
+                "http://localhost:8888/V-Inspect/frontend/pages/vehicle-owner/dashboard.html";
               break;
             case "inspection_staff":
-              window.location.href = `${baseUrl}/inspection-staff/dashboard.html`;
+              console.log("Redirecting to inspection staff dashboard");
+              window.location.href =
+                "http://localhost:8888/V-Inspect/frontend/pages/inspection-staff/dashboard.html";
               break;
             default:
               console.log("Unknown role, staying on login page");
@@ -106,13 +108,15 @@
           errorMsg.style.display = "none";
 
           try {
-            // Hardkodirani testni korisnici
+            // Hardkodirani korisnici za development
             if (email === "admin@example.com" && password === "admin123") {
+              console.log("Admin hardcoded login");
+              // Kreiraj fake token za administratora
               const payload = {
                 user_id: 1,
-                email: email,
+                email: "admin@example.com",
                 role: "admin",
-                exp: Math.floor(Date.now() / 1000) + 86400,
+                exp: Math.floor(Date.now() / 1000) + 86400, // 24h
               };
 
               const token = `fake.${btoa(JSON.stringify(payload))}.sig`;
@@ -123,11 +127,13 @@
             }
 
             if (email === "staff@example.com" && password === "12345678") {
+              console.log("Staff hardcoded login");
+              // Kreiraj fake token za osoblje
               const payload = {
                 user_id: 9,
-                email: email,
+                email: "staff@example.com",
                 role: "inspection_staff",
-                exp: Math.floor(Date.now() / 1000) + 86400,
+                exp: Math.floor(Date.now() / 1000) + 86400, // 24h
               };
 
               const token = `fake.${btoa(JSON.stringify(payload))}.sig`;
@@ -138,11 +144,13 @@
             }
 
             if (email === "owner@example.com" && password === "owner123") {
+              console.log("Owner hardcoded login");
+              // Kreiraj fake token za vlasnika
               const payload = {
                 user_id: 2,
-                email: email,
+                email: "owner@example.com",
                 role: "vehicle_owner",
-                exp: Math.floor(Date.now() / 1000) + 86400,
+                exp: Math.floor(Date.now() / 1000) + 86400, // 24h
               };
 
               const token = `fake.${btoa(JSON.stringify(payload))}.sig`;
@@ -152,13 +160,12 @@
               return;
             }
 
-            // Pokušaj prijavu putem API-ja (za prave korisnike iz baze)
+            // Pokušaj prijavu putem API-ja
             console.log("Attempting login via API");
             const response = await api.login(email, password);
 
             if (response && response.token) {
               console.log("Login successful via API");
-
               try {
                 // Dohvati ulogu iz tokena
                 const tokenParts = response.token.split(".");
