@@ -6,8 +6,7 @@
 class ApiClient {
   constructor() {
     // API Base URL - Change this based on your backend URL
-    this.baseUrl = "http://localhost:8888/V-Inspect";
-    // Check if we have a token in local storage
+    this.baseUrl = "http://localhost:8888/V-Inspect/backend"; // Check if we have a token in local storage
     this.token = localStorage.getItem("token");
   }
 
