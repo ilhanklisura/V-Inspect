@@ -22,7 +22,7 @@ class Config {
     }
 
     public static function DB_PASSWORD() {
-        return self::get_env("DB_PASSWORD", "bvbreus11");
+        return self::get_env("DB_PASSWORD", "12345678");
     }
 
     public static function DB_HOST() {
