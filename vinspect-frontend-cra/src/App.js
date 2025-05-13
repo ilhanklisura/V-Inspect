@@ -29,6 +29,8 @@ import ScheduleInspection from "./pages/owner/ScheduleInspection";
 import PendingInspections from "./pages/staff/PendingInspections";
 import CompletedInspections from "./pages/staff/CompletedInspections";
 
+import Inspections from "./pages/admin/Inspections";
+
 import "./App.css";
 
 function App() {
@@ -55,14 +57,7 @@ function App() {
               <Route path="/admin/users" element={<Users />} />
               <Route path="/admin/vehicles" element={<Vehicles />} />
               <Route path="/admin/stations" element={<Stations />} />
-              <Route
-                path="/admin/inspections"
-                element={
-                  <Layout>
-                    <div>All Inspections</div>
-                  </Layout>
-                }
-              />
+              <Route path="/admin/inspections" element={<Inspections />} />
             </Route>
 
             {/* Vlasnik vozila rute */}
