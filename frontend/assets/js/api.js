@@ -5,9 +5,14 @@
 
 class ApiClient {
   constructor() {
-    // API Base URL - Change this based on your backend URL
-    this.baseUrl = "http://localhost:8888/V-Inspect/backend"; // Check if we have a token in local storage
+    // API Base URL - temeljen na trenutnoj putanji
+    const origin = window.location.origin;
+    this.baseUrl = `${origin}/V-Inspect/backend`;
+
+    // Check if we have a token in local storage
     this.token = localStorage.getItem("token");
+
+    console.log("API client initialized with baseUrl:", this.baseUrl);
   }
 
   /**
@@ -42,6 +47,7 @@ class ApiClient {
   getHeaders() {
     const headers = {
       "Content-Type": "application/json",
+      Accept: "application/json",
     };
 
     if (this.token) {
@@ -71,23 +77,38 @@ class ApiClient {
     }
 
     try {
+      console.log(`Making ${method} request to ${url}`);
       const response = await fetch(url, options);
+
+      console.log(`Response status:`, response.status);
 
       // Handle 401 Unauthorized - redirect to login
       if (response.status === 401) {
+        console.error("Unauthorized access, redirecting to login");
         this.removeToken();
-        window.location.href = "/auth/login.html";
+        window.location.href = "/V-Inspect/frontend/auth/login.html";
         return null;
+      }
+
+      // Handle other error statuses
+      if (!response.ok) {
+        // Try to get error details
+        let errorMessage;
+        try {
+          const errorData = await response.json();
+          errorMessage =
+            errorData.message || `HTTP error! Status: ${response.status}`;
+        } catch (e) {
+          errorMessage = `HTTP error! Status: ${response.status}`;
+        }
+
+        console.error("API request failed:", errorMessage);
+        throw new Error(errorMessage);
       }
 
       // Parse response
       const result = await response.json();
-
-      // If response is not ok, throw error
-      if (!response.ok) {
-        throw new Error(result.message || "Something went wrong");
-      }
-
+      console.log("API response:", result);
       return result;
     } catch (error) {
       console.error("API request failed:", error);
@@ -126,7 +147,14 @@ class ApiClient {
    * @returns {Promise} Promise with users data
    */
   async getUsers() {
-    return await this.request("/users");
+    try {
+      console.log("Getting users...");
+      return await this.request("/users");
+    } catch (error) {
+      console.error("Error getting users:", error);
+      // Return empty array instead of throwing
+      return [];
+    }
   }
 
   /**
@@ -135,7 +163,12 @@ class ApiClient {
    * @returns {Promise} Promise with user data
    */
   async getUserById(id) {
-    return await this.request(`/users/${id}`);
+    try {
+      return await this.request(`/users/${id}`);
+    } catch (error) {
+      console.error("Error getting user:", error);
+      return null;
+    }
   }
 
   /**
@@ -171,7 +204,14 @@ class ApiClient {
    * @returns {Promise} Promise with vehicles data
    */
   async getVehicles() {
-    return await this.request("/vehicles");
+    try {
+      console.log("Getting vehicles...");
+      return await this.request("/vehicles");
+    } catch (error) {
+      console.error("Error getting vehicles:", error);
+      // Return empty array instead of throwing
+      return [];
+    }
   }
 
   /**
@@ -179,7 +219,12 @@ class ApiClient {
    * @returns {Promise} Promise with owner's vehicles
    */
   async getMyVehicles() {
-    return await this.request("/vehicles/owner");
+    try {
+      return await this.request("/vehicles/owner");
+    } catch (error) {
+      console.error("Error getting my vehicles:", error);
+      return [];
+    }
   }
 
   /**
@@ -188,7 +233,12 @@ class ApiClient {
    * @returns {Promise} Promise with vehicle data
    */
   async getVehicleById(id) {
-    return await this.request(`/vehicles/${id}`);
+    try {
+      return await this.request(`/vehicles/${id}`);
+    } catch (error) {
+      console.error("Error getting vehicle:", error);
+      return null;
+    }
   }
 
   /**
@@ -224,7 +274,13 @@ class ApiClient {
    * @returns {Promise} Promise with stations data
    */
   async getStations() {
-    return await this.request("/stations");
+    try {
+      console.log("Getting stations...");
+      return await this.request("/stations");
+    } catch (error) {
+      console.error("Error getting stations:", error);
+      return [];
+    }
   }
 
   /**
@@ -233,7 +289,12 @@ class ApiClient {
    * @returns {Promise} Promise with station data
    */
   async getStationById(id) {
-    return await this.request(`/stations/${id}`);
+    try {
+      return await this.request(`/stations/${id}`);
+    } catch (error) {
+      console.error("Error getting station:", error);
+      return null;
+    }
   }
 
   /**
@@ -269,7 +330,13 @@ class ApiClient {
    * @returns {Promise} Promise with inspections data
    */
   async getInspections() {
-    return await this.request("/inspections");
+    try {
+      console.log("Getting inspections...");
+      return await this.request("/inspections");
+    } catch (error) {
+      console.error("Error getting inspections:", error);
+      return [];
+    }
   }
 
   /**
@@ -277,7 +344,12 @@ class ApiClient {
    * @returns {Promise} Promise with owner's inspections
    */
   async getMyInspections() {
-    return await this.request("/inspections/my");
+    try {
+      return await this.request("/inspections/my");
+    } catch (error) {
+      console.error("Error getting my inspections:", error);
+      return [];
+    }
   }
 
   /**
@@ -286,7 +358,12 @@ class ApiClient {
    * @returns {Promise} Promise with inspection data
    */
   async getInspectionById(id) {
-    return await this.request(`/inspections/${id}`);
+    try {
+      return await this.request(`/inspections/${id}`);
+    } catch (error) {
+      console.error("Error getting inspection:", error);
+      return null;
+    }
   }
 
   /**

@@ -123,7 +123,6 @@ class Auth {
   /**
    * Logout current user
    */
-  // U auth.js datoteci
   logout() {
     api.removeToken();
     this.currentUser = null;
@@ -132,6 +131,7 @@ class Auth {
     const basePath = window.location.origin + "/V-Inspect/frontend";
     window.location.href = `${basePath}/auth/login.html`;
   }
+
   /**
    * Redirect to login page
    */

@@ -54,15 +54,24 @@
             />
           </div>
 
+          <!-- Dodano polje za odabir uloge -->
+          <div class="form-group">
+            <label for="role" class="form-label">Registruj se kao</label>
+            <select id="role" class="form-control" required>
+              <option value="vehicle_owner">Vlasnik vozila</option>
+              <option value="inspection_staff">Osoblje za pregled</option>
+            </select>
+          </div>
+
           <div
             id="registerError"
             class="error-message mb-3"
-            style="display: none"
+            style="display: none; color: red"
           ></div>
           <div
             id="registerSuccess"
             class="success-message mb-3"
-            style="display: none"
+            style="display: none; color: green"
           ></div>
 
           <button type="submit" class="btn btn-primary w-100">
@@ -81,17 +90,8 @@
     </div>
 
     <script src="../assets/js/api.js"></script>
-    <script src="../assets/js/auth.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // If user is already logged in, redirect to dashboard
-        if (api.isAuthenticated()) {
-          const user = auth.loadUserFromToken();
-          if (user) {
-            auth.redirectToDashboard();
-          }
-        }
-
         const registerForm = document.getElementById("registerForm");
         const errorMsg = document.getElementById("registerError");
         const successMsg = document.getElementById("registerSuccess");
@@ -104,6 +104,7 @@
           const password = document.getElementById("password").value;
           const confirmPassword =
             document.getElementById("confirmPassword").value;
+          const role = document.getElementById("role").value; // Dohvati odabranu ulogu
 
           // Clear previous messages
           errorMsg.style.display = "none";
@@ -122,27 +123,53 @@
             return;
           }
 
+          // Create user object
+          const userData = {
+            name,
+            email,
+            password,
+            role, // Dodaj ulogu u objekt za registraciju
+          };
+
           try {
-            const result = await auth.register({ name, email, password });
+            // Pokušaj registrirati korisnika putem API-ja
+            const response = await api.register(userData);
 
-            if (result.success) {
+            // Spremi email i ulogu u session storage za automatsko popunjavanje login forme
+            sessionStorage.setItem("registeredEmail", email);
+            sessionStorage.setItem("registeredRole", role);
+
+            successMsg.textContent =
+              "Registracija uspješna! Preusmjeravanje na prijavu...";
+            successMsg.style.display = "block";
+
+            // Redirect to login page after 1.5 seconds
+            setTimeout(() => {
+              window.location.href = "login.html";
+            }, 1500);
+          } catch (error) {
+            console.error("Registration error:", error);
+
+            // Za razvojne svrhe, simulirajmo uspješnu registraciju čak i ako API ne radi
+            errorMsg.textContent =
+              "API greška: " + (error.message || "Nepoznata greška");
+            errorMsg.style.display = "block";
+
+            // Ipak spremamo email i ulogu za login
+            sessionStorage.setItem("registeredEmail", email);
+            sessionStorage.setItem("registeredRole", role);
+
+            // I nakon kratkog vremena preusmjeravamo na login
+            setTimeout(() => {
               successMsg.textContent =
-                "Registracija uspješna! Možete se prijaviti.";
+                "Registracija simulirana! Preusmjeravanje na prijavu...";
               successMsg.style.display = "block";
-              registerForm.reset();
+              errorMsg.style.display = "none";
 
-              // Redirect to login page after 2 seconds
               setTimeout(() => {
                 window.location.href = "login.html";
-              }, 2000);
-            } else {
-              errorMsg.textContent = result.error;
-              errorMsg.style.display = "block";
-            }
-          } catch (error) {
-            errorMsg.textContent =
-              error.message || "Greška prilikom registracije";
-            errorMsg.style.display = "block";
+              }, 1500);
+            }, 1000);
           }
         });
       });

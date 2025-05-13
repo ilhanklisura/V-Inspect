@@ -37,7 +37,7 @@
           <div
             id="loginError"
             class="error-message mb-3"
-            style="display: none"
+            style="display: none; color: red"
           ></div>
 
           <button type="submit" class="btn btn-primary w-100">Prijava</button>
@@ -54,19 +54,47 @@
     </div>
 
     <script src="../assets/js/api.js"></script>
-    <script src="../assets/js/auth.js"></script>
     <script>
       document.addEventListener("DOMContentLoaded", function () {
-        // If user is already logged in, redirect to dashboard
-        if (api.isAuthenticated()) {
-          const user = auth.loadUserFromToken();
-          if (user) {
-            auth.redirectToDashboard();
+        const loginForm = document.getElementById("loginForm");
+        const errorMsg = document.getElementById("loginError");
+
+        // Provjeri već postojeći token
+        const existingToken = localStorage.getItem("token");
+        if (existingToken) {
+          try {
+            // Dohvati ulogu iz tokena
+            const payload = JSON.parse(atob(existingToken.split(".")[1]));
+            if (payload && payload.role) {
+              redirectBasedOnRole(payload.role);
+              return; // Prekini izvršavanje ako je korisnik već prijavljen
+            }
+          } catch (e) {
+            console.log("Invalid token, continuing to login page");
+            localStorage.removeItem("token"); // Ukloni neispravan token
           }
         }
 
-        const loginForm = document.getElementById("loginForm");
-        const errorMsg = document.getElementById("loginError");
+        // Funkcija za preusmjeravanje na odgovarajući dashboard
+        function redirectBasedOnRole(role) {
+          const baseUrl = "http://localhost:8888/V-Inspect/frontend/pages";
+
+          console.log(`Redirecting user with role: ${role}`);
+
+          switch (role) {
+            case "admin":
+              window.location.href = `${baseUrl}/admin/dashboard.html`;
+              break;
+            case "vehicle_owner":
+              window.location.href = `${baseUrl}/vehicle-owner/dashboard.html`;
+              break;
+            case "inspection_staff":
+              window.location.href = `${baseUrl}/inspection-staff/dashboard.html`;
+              break;
+            default:
+              console.log("Unknown role, staying on login page");
+          }
+        }
 
         loginForm.addEventListener("submit", async function (e) {
           e.preventDefault();
@@ -74,20 +102,94 @@
           const email = document.getElementById("email").value;
           const password = document.getElementById("password").value;
 
-          // Clear previous error
+          // Očisti prethodne greške
           errorMsg.style.display = "none";
 
           try {
-            const result = await auth.login(email, password);
+            // Hardkodirani testni korisnici
+            if (email === "admin@example.com" && password === "admin123") {
+              const payload = {
+                user_id: 1,
+                email: email,
+                role: "admin",
+                exp: Math.floor(Date.now() / 1000) + 86400,
+              };
 
-            if (result.success) {
-              // Redirect handled by auth.login
+              const token = `fake.${btoa(JSON.stringify(payload))}.sig`;
+              localStorage.setItem("token", token);
+
+              redirectBasedOnRole("admin");
+              return;
+            }
+
+            if (email === "staff@example.com" && password === "12345678") {
+              const payload = {
+                user_id: 9,
+                email: email,
+                role: "inspection_staff",
+                exp: Math.floor(Date.now() / 1000) + 86400,
+              };
+
+              const token = `fake.${btoa(JSON.stringify(payload))}.sig`;
+              localStorage.setItem("token", token);
+
+              redirectBasedOnRole("inspection_staff");
+              return;
+            }
+
+            if (email === "owner@example.com" && password === "owner123") {
+              const payload = {
+                user_id: 2,
+                email: email,
+                role: "vehicle_owner",
+                exp: Math.floor(Date.now() / 1000) + 86400,
+              };
+
+              const token = `fake.${btoa(JSON.stringify(payload))}.sig`;
+              localStorage.setItem("token", token);
+
+              redirectBasedOnRole("vehicle_owner");
+              return;
+            }
+
+            // Pokušaj prijavu putem API-ja (za prave korisnike iz baze)
+            console.log("Attempting login via API");
+            const response = await api.login(email, password);
+
+            if (response && response.token) {
+              console.log("Login successful via API");
+
+              try {
+                // Dohvati ulogu iz tokena
+                const tokenParts = response.token.split(".");
+                if (tokenParts.length >= 2) {
+                  const payload = JSON.parse(atob(tokenParts[1]));
+                  console.log("User role from token:", payload.role);
+
+                  // Preusmjeri na odgovarajući dashboard
+                  redirectBasedOnRole(payload.role);
+                } else {
+                  console.error("Invalid token format");
+                  errorMsg.textContent =
+                    "Greška prilikom prijave: Neispravan token";
+                  errorMsg.style.display = "block";
+                }
+              } catch (error) {
+                console.error("Error parsing token:", error);
+                errorMsg.textContent =
+                  "Greška prilikom prijave: Neispravan token";
+                errorMsg.style.display = "block";
+              }
             } else {
-              errorMsg.textContent = result.error;
+              console.error("Login failed: No token in response");
+              errorMsg.textContent = "Pogrešan email ili lozinka";
               errorMsg.style.display = "block";
             }
           } catch (error) {
-            errorMsg.textContent = error.message || "Greška prilikom prijave";
+            console.error("Login error:", error);
+            errorMsg.textContent = `Greška prilikom prijave: ${
+              error.message || "Nepoznata greška"
+            }`;
             errorMsg.style.display = "block";
           }
         });
