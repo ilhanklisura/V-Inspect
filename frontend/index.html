@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="bs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VInspect - Sistem za tehnički pregled vozila</title>
+    <link rel="stylesheet" href="assets/css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="main-header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">VInspect</div>
+          <nav class="nav-links">
+            <a href="#" class="nav-link">Početna</a>
+            <a href="#about" class="nav-link">O nama</a>
+            <a href="#services" class="nav-link">Usluge</a>
+            <a href="#contact" class="nav-link">Kontakt</a>
+          </nav>
+          <div>
+            <a href="auth/login.html" class="btn btn-outline">Prijava</a>
+            <a href="auth/register.html" class="btn btn-primary ml-2"
+              >Registracija</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-section">
+      <div class="container">
+        <div class="hero-content">
+          <h1>Dobrodošli u VInspect</h1>
+          <p class="hero-subtitle">
+            Moderni sistem za tehnički pregled vozila koji spaja vlasnike vozila
+            i stanice za tehnički pregled
+          </p>
+          <div class="hero-buttons">
+            <a href="auth/register.html" class="btn btn-primary"
+              >Registrujte se</a
+            >
+            <a href="#about" class="btn btn-outline ml-2">Saznajte više</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="about">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">O VInspect sistemu</h2>
+          <p class="section-subtitle">
+            Jednostavno i efikasno zakazivanje tehničkih pregleda
+          </p>
+        </div>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon">🚗</div>
+            <h3 class="feature-title">Za vlasnike vozila</h3>
+            <p class="feature-description">
+              Jednostavno upravljajte svojim vozilima, zakazujte preglede i
+              pratite rezultate na jednom mjestu.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <h3 class="feature-title">Za stanice tehničkog pregleda</h3>
+            <p class="feature-description">
+              Efikasno upravljajte zakazanim pregledima i dokumentirajte
+              rezultate pregleda.
+            </p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <h3 class="feature-title">Za administratore</h3>
+            <p class="feature-description">
+              Kompletan pregled sistema, upravljanje korisnicima, stanicama i
+              evidencijom pregleda.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section bg-light" id="services">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Naše usluge</h2>
+          <p class="section-subtitle">
+            Sve što trebate za jednostavno upravljanje tehničkim pregledima
+          </p>
+        </div>
+        <div class="services-list">
+          <div class="service-card">
+            <h3 class="service-title">Registracija vozila</h3>
+            <p class="service-description">
+              Dodajte svoja vozila u sistem i pratite njihov status i historiju
+              pregleda.
+            </p>
+          </div>
+          <div class="service-card">
+            <h3 class="service-title">Zakazivanje pregleda</h3>
+            <p class="service-description">
+              Jednostavno zakažite pregled u željenom terminu i odabranoj
+              stanici.
+            </p>
+          </div>
+          <div class="service-card">
+            <h3 class="service-title">Praćenje rezultata</h3>
+            <p class="service-description">
+              Pratite rezultate pregleda i budite obavješteni o statusu vašeg
+              vozila.
+            </p>
+          </div>
+          <div class="service-card">
+            <h3 class="service-title">Upravljanje stanicama</h3>
+            <p class="service-description">
+              Za administratore: dodajte nove stanice i pratite njihov rad.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="contact">
+      <div class="container">
+        <div class="section-header">
+          <h2 class="section-title">Kontaktirajte nas</h2>
+          <p class="section-subtitle">Imate pitanja? Tu smo da pomognemo!</p>
+        </div>
+        <div class="contact-container">
+          <div class="contact-info">
+            <div class="contact-item">
+              <div class="contact-icon">📍</div>
+              <div>
+                <h4 class="contact-title">Adresa</h4>
+                <p>Ulica tehničkih pregleda 123, Sarajevo</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">📞</div>
+              <div>
+                <h4 class="contact-title">Telefon</h4>
+                <p>+387 33 123 456</p>
+              </div>
+            </div>
+            <div class="contact-item">
+              <div class="contact-icon">✉️</div>
+              <div>
+                <h4 class="contact-title">Email</h4>
+                <p>info@vinspect.ba</p>
+              </div>
+            </div>
+          </div>
+          <div class="contact-form">
+            <form id="contactForm">
+              <div class="form-group">
+                <label for="name" class="form-label">Ime i prezime</label>
+                <input type="text" id="name" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" id="email" class="form-control" required />
+              </div>
+              <div class="form-group">
+                <label for="message" class="form-label">Poruka</label>
+                <textarea
+                  id="message"
+                  class="form-control"
+                  rows="5"
+                  required
+                ></textarea>
+              </div>
+              <button type="submit" class="btn btn-primary w-100">
+                Pošalji poruku
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer class="main-footer">
+      <div class="container">
+        <div class="footer-content">
+          <div class="footer-logo">VInspect</div>
+          <div class="footer-links">
+            <a href="#" class="footer-link">Početna</a>
+            <a href="#about" class="footer-link">O nama</a>
+            <a href="#services" class="footer-link">Usluge</a>
+            <a href="#contact" class="footer-link">Kontakt</a>
+            <a href="auth/login.html" class="footer-link">Prijava</a>
+            <a href="auth/register.html" class="footer-link">Registracija</a>
+          </div>
+        </div>
+        <div class="footer-bottom">
+          <p>&copy; 2025 VInspect. Sva prava pridržana.</p>
+        </div>
+      </div>
+    </footer>
+
+    <script>
+      // Handle contact form submission
+      document
+        .getElementById("contactForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          alert("Poruka uspješno poslana! Odgovorit ćemo vam uskoro.");
+          this.reset();
+        });
+    </script>
+  </body>
+</html>
