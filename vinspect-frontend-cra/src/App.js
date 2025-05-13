@@ -30,6 +30,7 @@ import PendingInspections from "./pages/staff/PendingInspections";
 import CompletedInspections from "./pages/staff/CompletedInspections";
 
 import Inspections from "./pages/admin/Inspections";
+import Profile from "./pages/Profile";
 
 import "./App.css";
 
@@ -87,14 +88,7 @@ function App() {
             </Route>
 
             {/* Zajedničke rute */}
-            <Route
-              path="/profile"
-              element={
-                <Layout>
-                  <div>User Profile</div>
-                </Layout>
-              }
-            />
+            <Route path="/profile" element={<Profile />} />
           </Route>
 
           {/* Osnovna redirekcija na dashboard */}
