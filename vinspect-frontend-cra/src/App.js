@@ -14,6 +14,18 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
+// Admin stranice
+import Users from "./pages/admin/Users";
+
+// Vlasnik vozila stranice
+import MyVehicles from "./pages/owner/MyVehicles";
+import MyInspections from "./pages/owner/MyInspections";
+import ScheduleInspection from "./pages/owner/ScheduleInspection";
+
+// Osoblje inspekcije stranice
+import PendingInspections from "./pages/staff/PendingInspections";
+import CompletedInspections from "./pages/staff/CompletedInspections";
+
 import "./App.css";
 
 function App() {
@@ -37,14 +49,7 @@ function App() {
 
             {/* Admin rute */}
             <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
-              <Route
-                path="/admin/users"
-                element={
-                  <Layout>
-                    <div>User Management</div>
-                  </Layout>
-                }
-              />
+              <Route path="/admin/users" element={<Users />} />
               <Route
                 path="/admin/vehicles"
                 element={
@@ -75,29 +80,11 @@ function App() {
             <Route
               element={<ProtectedRoute allowedRoles={["vehicle_owner"]} />}
             >
-              <Route
-                path="/my-vehicles"
-                element={
-                  <Layout>
-                    <div>My Vehicles</div>
-                  </Layout>
-                }
-              />
-              <Route
-                path="/my-inspections"
-                element={
-                  <Layout>
-                    <div>My Inspections</div>
-                  </Layout>
-                }
-              />
+              <Route path="/my-vehicles" element={<MyVehicles />} />
+              <Route path="/my-inspections" element={<MyInspections />} />
               <Route
                 path="/schedule-inspection"
-                element={
-                  <Layout>
-                    <div>Schedule Inspection</div>
-                  </Layout>
-                }
+                element={<ScheduleInspection />}
               />
             </Route>
 
@@ -107,19 +94,11 @@ function App() {
             >
               <Route
                 path="/pending-inspections"
-                element={
-                  <Layout>
-                    <div>Pending Inspections</div>
-                  </Layout>
-                }
+                element={<PendingInspections />}
               />
               <Route
                 path="/completed-inspections"
-                element={
-                  <Layout>
-                    <div>Completed Inspections</div>
-                  </Layout>
-                }
+                element={<CompletedInspections />}
               />
             </Route>
 
