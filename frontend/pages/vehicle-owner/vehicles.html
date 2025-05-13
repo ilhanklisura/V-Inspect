@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="bs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Moja vozila - VInspect</title>
+    <link rel="stylesheet" href="../../assets/css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="main-header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">VInspect</div>
+          <div class="user-info">
+            <span class="user-name" id="userNameDisplay"></span>
+            <button id="logout-btn" class="logout-btn">
+              <i class="fas fa-sign-out-alt mr-1"></i> Odjava
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-container">
+      <div class="sidebar">
+        <ul class="sidebar-menu">
+          <li class="sidebar-item">
+            <a href="dashboard.html" class="sidebar-link">
+              <i class="fas fa-tachometer-alt sidebar-icon"></i> Dashboard
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="vehicles.html" class="sidebar-link active">
+              <i class="fas fa-car sidebar-icon"></i> Moja vozila
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="inspections.html" class="sidebar-link">
+              <i class="fas fa-clipboard-check sidebar-icon"></i> Tehnički
+              pregledi
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="dashboard-content">
+        <div
+          class="page-header d-flex justify-content-between align-items-center"
+        >
+          <div>
+            <h1 class="page-title">Moja vozila</h1>
+            <p class="page-subtitle">Upravljajte vašim vozilima</p>
+          </div>
+          <button id="addVehicleBtn" class="btn btn-primary">
+            <i class="fas fa-plus mr-1"></i> Dodaj vozilo
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Proizvođač</th>
+                  <th>Model</th>
+                  <th>Godina</th>
+                  <th>VIN</th>
+                  <th>Dokument</th>
+                  <th>Akcije</th>
+                </tr>
+              </thead>
+              <tbody id="vehiclesTable">
+                <tr>
+                  <td colspan="6" class="text-center">Učitavanje...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Vehicle Form Modal -->
+    <div class="modal-backdrop" id="vehicleModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modalTitle">Dodaj novo vozilo</h3>
+          <button class="modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="vehicleForm">
+            <input type="hidden" id="vehicleId" />
+
+            <div class="form-group">
+              <label for="make" class="form-label">Proizvođač</label>
+              <input type="text" id="make" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label for="model" class="form-label">Model</label>
+              <input type="text" id="model" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label for="year" class="form-label">Godina proizvodnje</label>
+              <input
+                type="number"
+                id="year"
+                min="1900"
+                max="2025"
+                class="form-control"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="vin" class="form-label"
+                >VIN (Vehicle Identification Number)</label
+              >
+              <input type="text" id="vin" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label for="documentPath" class="form-label"
+                >Dokument (link do dokumenta)</label
+              >
+              <input type="text" id="documentPath" class="form-control" />
+              <small class="form-text"
+                >Opcionalno - link do dokumenta vozila</small
+              >
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="cancelBtn">Odustani</button>
+          <button class="btn btn-primary" id="saveVehicleBtn">Sačuvaj</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-backdrop" id="deleteModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 class="modal-title">Potvrda brisanja</h3>
+          <button class="modal-close" id="closeDeleteModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Da li ste sigurni da želite obrisati ovo vozilo?</p>
+          <p>Svi povezani podaci i pregledi će takođe biti obrisani.</p>
+          <input type="hidden" id="deleteVehicleId" />
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="cancelDeleteBtn">Odustani</button>
+          <button class="btn btn-danger" id="confirmDeleteBtn">Obriši</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../assets/js/api.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script>
+      // Initialize auth and check access
+      document.addEventListener("DOMContentLoaded", async function () {
+        // Check if user is authenticated
+        if (!api.isAuthenticated()) {
+          auth.redirectToLogin();
+          return;
+        }
+
+        const user = auth.loadUserFromToken();
+        if (!user || user.role !== "vehicle_owner") {
+          auth.redirectToDashboard();
+          return;
+        }
+
+        // Display user name
+        document.getElementById("userNameDisplay").textContent = user.email;
+
+        // Load vehicles
+        await loadVehicles();
+
+        // Add event listeners
+        document
+          .getElementById("addVehicleBtn")
+          .addEventListener("click", showAddVehicleModal);
+        document
+          .getElementById("closeModalBtn")
+          .addEventListener("click", closeVehicleModal);
+        document
+          .getElementById("cancelBtn")
+          .addEventListener("click", closeVehicleModal);
+        document
+          .getElementById("saveVehicleBtn")
+          .addEventListener("click", saveVehicle);
+
+        document
+          .getElementById("closeDeleteModalBtn")
+          .addEventListener("click", closeDeleteModal);
+        document
+          .getElementById("cancelDeleteBtn")
+          .addEventListener("click", closeDeleteModal);
+        document
+          .getElementById("confirmDeleteBtn")
+          .addEventListener("click", deleteVehicle);
+      });
+
+      // Load vehicles
+      async function loadVehicles() {
+        try {
+          const vehicles = await api.getMyVehicles();
+          displayVehicles(vehicles);
+        } catch (error) {
+          console.error("Error loading vehicles:", error);
+          showNotification("Greška prilikom učitavanja vozila", "error");
+        }
+      }
+
+      // Display vehicles in table
+      function displayVehicles(vehicles) {
+        const tableBody = document.getElementById("vehiclesTable");
+
+        if (vehicles.length === 0) {
+          tableBody.innerHTML =
+            '<tr><td colspan="6" class="text-center">Nema registrovanih vozila</td></tr>';
+          return;
+        }
+
+        let html = "";
+        vehicles.forEach((vehicle) => {
+          const documentLink = vehicle.document_path
+            ? `<a href="${vehicle.document_path}" target="_blank" class="btn btn-sm btn-outline">Vidi dokument</a>`
+            : "Nije dostupan";
+
+          html += `
+                <tr>
+                    <td>${vehicle.make}</td>
+                    <td>${vehicle.model}</td>
+                    <td>${vehicle.year}</td>
+                    <td>${vehicle.vin}</td>
+                    <td>${documentLink}</td>
+                    <td class="action-cell">
+                        <button class="btn btn-primary btn-sm btn-action" onclick="editVehicle(${vehicle.id})">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm btn-action" onclick="showDeleteModal(${vehicle.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        <button class="btn btn-success btn-sm btn-action" onclick="scheduleInspection(${vehicle.id})">
+                            <i class="fas fa-calendar-check"></i>
+                        </button>
+                    </td>
+                </tr>
+                `;
+        });
+
+        tableBody.innerHTML = html;
+      }
+
+      // Show add vehicle modal
+      function showAddVehicleModal() {
+        document.getElementById("modalTitle").textContent = "Dodaj novo vozilo";
+        document.getElementById("vehicleForm").reset();
+        document.getElementById("vehicleId").value = "";
+        document.getElementById("vehicleModal").classList.add("show");
+      }
+
+      // Edit vehicle
+      async function editVehicle(id) {
+        try {
+          const vehicle = await api.getVehicleById(id);
+
+          document.getElementById("modalTitle").textContent = "Uredi vozilo";
+          document.getElementById("vehicleId").value = vehicle.id;
+          document.getElementById("make").value = vehicle.make;
+          document.getElementById("model").value = vehicle.model;
+          document.getElementById("year").value = vehicle.year;
+          document.getElementById("vin").value = vehicle.vin;
+          document.getElementById("documentPath").value =
+            vehicle.document_path || "";
+
+          document.getElementById("vehicleModal").classList.add("show");
+        } catch (error) {
+          console.error("Error loading vehicle:", error);
+          showNotification(
+            "Greška prilikom učitavanja podataka o vozilu",
+            "error"
+          );
+        }
+      }
+
+      // Close vehicle modal
+      function closeVehicleModal() {
+        document.getElementById("vehicleModal").classList.remove("show");
+      }
+
+      // Save vehicle (create or update)
+      async function saveVehicle() {
+        const vehicleId = document.getElementById("vehicleId").value;
+
+        const vehicleData = {
+          make: document.getElementById("make").value,
+          model: document.getElementById("model").value,
+          year: parseInt(document.getElementById("year").value),
+          vin: document.getElementById("vin").value,
+          document_path: document.getElementById("documentPath").value || null,
+        };
+
+        try {
+          if (vehicleId) {
+            // Update existing vehicle
+            await api.updateVehicle(vehicleId, vehicleData);
+            showNotification("Vozilo uspješno ažurirano");
+          } else {
+            // Create new vehicle
+            await api.createVehicle(vehicleData);
+            showNotification("Vozilo uspješno dodano");
+          }
+
+          // Close modal and reload vehicles
+          closeVehicleModal();
+          await loadVehicles();
+        } catch (error) {
+          console.error("Error saving vehicle:", error);
+          showNotification(
+            error.message || "Greška prilikom spremanja vozila",
+            "error"
+          );
+        }
+      }
+
+      // Show delete confirmation modal
+      function showDeleteModal(id) {
+        document.getElementById("deleteVehicleId").value = id;
+        document.getElementById("deleteModal").classList.add("show");
+      }
+
+      // Close delete modal
+      function closeDeleteModal() {
+        document.getElementById("deleteModal").classList.remove("show");
+      }
+
+      // Delete vehicle
+      async function deleteVehicle() {
+        const vehicleId = document.getElementById("deleteVehicleId").value;
+
+        try {
+          await api.deleteVehicle(vehicleId);
+          showNotification("Vozilo uspješno obrisano");
+
+          // Close modal and reload vehicles
+          closeDeleteModal();
+          await loadVehicles();
+        } catch (error) {
+          console.error("Error deleting vehicle:", error);
+          showNotification(
+            error.message || "Greška prilikom brisanja vozila",
+            "error"
+          );
+        }
+      }
+
+      // Redirect to inspections page to schedule inspection
+      function scheduleInspection(vehicleId) {
+        window.location.href = `inspections.html?action=schedule&vehicleId=${vehicleId}`;
+      }
+    </script>
+  </body>
+</html>

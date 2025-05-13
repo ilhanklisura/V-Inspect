@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="bs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pregledi - Admin Panel - VInspect</title>
+    <link rel="stylesheet" href="../../assets/css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="main-header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">VInspect</div>
+          <div class="user-info">
+            <span class="user-name" id="userNameDisplay"></span>
+            <button id="logout-btn" class="logout-btn">
+              <i class="fas fa-sign-out-alt mr-1"></i> Odjava
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-container">
+      <div class="sidebar">
+        <ul class="sidebar-menu">
+          <li class="sidebar-item">
+            <a href="dashboard.html" class="sidebar-link">
+              <i class="fas fa-tachometer-alt sidebar-icon"></i> Dashboard
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="users.html" class="sidebar-link">
+              <i class="fas fa-users sidebar-icon"></i> Korisnici
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="vehicles.html" class="sidebar-link">
+              <i class="fas fa-car sidebar-icon"></i> Vozila
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="stations.html" class="sidebar-link">
+              <i class="fas fa-building sidebar-icon"></i> Stanice
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="inspections.html" class="sidebar-link active">
+              <i class="fas fa-clipboard-check sidebar-icon"></i> Pregledi
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="dashboard-content">
+        <div
+          class="page-header d-flex justify-content-between align-items-center"
+        >
+          <div>
+            <h1 class="page-title">Tehnički pregledi</h1>
+            <p class="page-subtitle">
+              Upravljanje svim tehničkim pregledima u sistemu
+            </p>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Svi tehnički pregledi</h2>
+            <div class="filter-controls">
+              <select id="statusFilter" class="form-control">
+                <option value="">Svi statusi</option>
+                <option value="scheduled">Zakazani</option>
+                <option value="completed">Završeni</option>
+                <option value="failed">Nisu prošli</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>Vozilo</th>
+                  <th>Vlasnik</th>
+                  <th>Stanica</th>
+                  <th>Datum</th>
+                  <th>Status</th>
+                  <th>Akcije</th>
+                </tr>
+              </thead>
+              <tbody id="inspectionsTable">
+                <tr>
+                  <td colspan="6" class="text-center">Učitavanje...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inspection Details Modal -->
+    <div class="modal-backdrop" id="inspectionModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 class="modal-title">Detalji pregleda</h3>
+          <button class="modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="inspectionDetails">
+            <div class="detail-item">
+              <h4>Vozilo</h4>
+              <p id="detailVehicle">-</p>
+            </div>
+            <div class="detail-item">
+              <h4>Vlasnik</h4>
+              <p id="detailOwner">-</p>
+            </div>
+            <div class="detail-item">
+              <h4>Stanica</h4>
+              <p id="detailStation">-</p>
+            </div>
+            <div class="detail-item">
+              <h4>Datum i vrijeme</h4>
+              <p id="detailDate">-</p>
+            </div>
+            <div class="detail-item">
+              <h4>Status</h4>
+              <p id="detailStatus">-</p>
+            </div>
+
+            <hr />
+
+            <form id="inspectionResultForm">
+              <input type="hidden" id="inspectionId" />
+
+              <div class="form-group">
+                <label for="status" class="form-label">Status pregleda</label>
+                <select id="status" class="form-control" required>
+                  <option value="scheduled">Zakazan</option>
+                  <option value="completed">Prošao</option>
+                  <option value="failed">Nije prošao</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="result" class="form-label">Rezultat pregleda</label>
+                <textarea id="result" class="form-control" rows="4"></textarea>
+              </div>
+            </form>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="cancelBtn">Odustani</button>
+          <button class="btn btn-primary" id="saveResultBtn">Sačuvaj</button>
+          <button class="btn btn-danger" id="deleteInspectionBtn">
+            Obriši
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../assets/js/api.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/inspections.js"></script>
+    <script>
+      // Varijable za podatke
+      let inspections = [];
+      let vehicles = {};
+      let users = {};
+      let stations = {};
+
+      // Initialize auth and check access
+      document.addEventListener("DOMContentLoaded", async function () {
+        // Check if user is authenticated
+        if (!api.isAuthenticated()) {
+          auth.redirectToLogin();
+          return;
+        }
+
+        const user = auth.loadUserFromToken();
+        if (!user || user.role !== "admin") {
+          auth.redirectToDashboard();
+          return;
+        }
+
+        // Display user name
+        document.getElementById("userNameDisplay").textContent = user.email;
+
+        // Add event listeners
+        document
+          .getElementById("closeModalBtn")
+          .addEventListener("click", closeModal);
+        document
+          .getElementById("cancelBtn")
+          .addEventListener("click", closeModal);
+        document
+          .getElementById("saveResultBtn")
+          .addEventListener("click", saveInspectionResult);
+        document
+          .getElementById("deleteInspectionBtn")
+          .addEventListener("click", confirmDeleteInspection);
+        document
+          .getElementById("statusFilter")
+          .addEventListener("change", filterInspections);
+
+        // Load data
+        await loadData();
+      });
+
+      async function loadData() {
+        try {
+          // Load all inspections, vehicles, users and stations
+          const [allInspections, allVehicles, allUsers, allStations] =
+            await Promise.all([
+              InspectionManager.getAllInspections(),
+              api.getVehicles(),
+              api.getUsers(),
+              api.getStations(),
+            ]);
+
+          inspections = allInspections;
+
+          // Create maps for easy lookup
+          vehicles = {};
+          allVehicles.forEach((vehicle) => {
+            vehicles[vehicle.id] = vehicle;
+          });
+
+          users = {};
+          allUsers.forEach((user) => {
+            users[user.id] = user;
+          });
+
+          stations = {};
+          allStations.forEach((station) => {
+            stations[station.id] = station;
+          });
+
+          // Display inspections
+          displayInspections(inspections);
+        } catch (error) {
+          console.error("Error loading data:", error);
+          showNotification("Greška prilikom učitavanja podataka", "error");
+        }
+      }
+
+      function displayInspections(inspectionsToShow) {
+        const tableBody = document.getElementById("inspectionsTable");
+
+        if (inspectionsToShow.length === 0) {
+          tableBody.innerHTML =
+            '<tr><td colspan="6" class="text-center">Nema tehničkih pregleda</td></tr>';
+          return;
+        }
+
+        // Sort by date (newest first)
+        inspectionsToShow.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        let html = "";
+        inspectionsToShow.forEach((inspection) => {
+          const vehicle = vehicles[inspection.vehicle_id] || {
+            make: "Nepoznato",
+            model: "Nepoznato",
+          };
+          const owner = users[vehicle.owner_id] || { name: "Nepoznat vlasnik" };
+          const station = stations[inspection.station_id] || {
+            name: "Nepoznata stanica",
+          };
+
+          const statusClass = InspectionManager.getStatusClass(
+            inspection.status
+          );
+          const statusText = InspectionManager.getStatusText(inspection.status);
+
+          const date = InspectionManager.formatInspectionDate(inspection.date);
+
+          html += `
+                <tr>
+                    <td>${vehicle.make} ${vehicle.model} (${vehicle.year})</td>
+                    <td>${owner.name}</td>
+                    <td>${station.name}</td>
+                    <td>${date}</td>
+                    <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                    <td class="action-cell">
+                        <button class="btn btn-primary btn-sm btn-action" onclick="showInspectionDetails(${inspection.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm btn-action" onclick="confirmDeleteInspection(${inspection.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                `;
+        });
+
+        tableBody.innerHTML = html;
+      }
+
+      function filterInspections() {
+        const status = document.getElementById("statusFilter").value;
+
+        if (!status) {
+          displayInspections(inspections);
+          return;
+        }
+
+        const filtered = inspections.filter(
+          (inspection) => inspection.status === status
+        );
+        displayInspections(filtered);
+      }
+
+      async function showInspectionDetails(id) {
+        try {
+          const inspection = await InspectionManager.getInspectionById(id);
+          const vehicle = vehicles[inspection.vehicle_id] || {
+            make: "Nepoznato",
+            model: "Nepoznato",
+          };
+          const owner = users[vehicle.owner_id] || { name: "Nepoznat vlasnik" };
+          const station = stations[inspection.station_id] || {
+            name: "Nepoznata stanica",
+          };
+
+          // Set inspection details
+          document.getElementById(
+            "detailVehicle"
+          ).textContent = `${vehicle.make} ${vehicle.model} (${vehicle.year})`;
+          document.getElementById("detailOwner").textContent = owner.name;
+          document.getElementById("detailStation").textContent = station.name;
+          document.getElementById("detailDate").textContent =
+            InspectionManager.formatInspectionDate(inspection.date);
+
+          const statusClass = InspectionManager.getStatusClass(
+            inspection.status
+          );
+          const statusText = InspectionManager.getStatusText(inspection.status);
+
+          document.getElementById(
+            "detailStatus"
+          ).innerHTML = `<span class="status-badge ${statusClass}">${statusText}</span>`;
+
+          // Set form values
+          document.getElementById("inspectionId").value = inspection.id;
+          document.getElementById("status").value = inspection.status;
+          document.getElementById("result").value = inspection.result || "";
+
+          // Show modal
+          document.getElementById("inspectionModal").classList.add("show");
+        } catch (error) {
+          console.error("Error loading inspection details:", error);
+          showNotification(
+            "Greška prilikom učitavanja detalja pregleda",
+            "error"
+          );
+        }
+      }
+
+      function closeModal() {
+        document.getElementById("inspectionModal").classList.remove("show");
+      }
+
+      async function saveInspectionResult() {
+        const inspectionId = document.getElementById("inspectionId").value;
+        const status = document.getElementById("status").value;
+        const result = document.getElementById("result").value;
+
+        try {
+          await InspectionManager.updateInspection(inspectionId, {
+            status,
+            result,
+          });
+
+          // Close modal and reload data
+          closeModal();
+          await loadData();
+        } catch (error) {
+          console.error("Error saving inspection result:", error);
+          showNotification(
+            error.message || "Greška prilikom spremanja rezultata pregleda",
+            "error"
+          );
+        }
+      }
+
+      function confirmDeleteInspection(id) {
+        if (!id) {
+          id = document.getElementById("inspectionId").value;
+        }
+
+        if (confirm("Da li ste sigurni da želite obrisati ovaj pregled?")) {
+          deleteInspection(id);
+        }
+      }
+
+      async function deleteInspection(id) {
+        try {
+          await InspectionManager.deleteInspection(id);
+
+          // Close modal if open
+          closeModal();
+
+          // Reload data
+          await loadData();
+        } catch (error) {
+          console.error("Error deleting inspection:", error);
+          showNotification(
+            error.message || "Greška prilikom brisanja pregleda",
+            "error"
+          );
+        }
+      }
+    </script>
+  </body>
+</html>

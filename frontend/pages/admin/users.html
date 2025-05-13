@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="bs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Korisnici - Admin Panel - VInspect</title>
+    <link rel="stylesheet" href="../../assets/css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <div class="main-header">
+      <div class="container">
+        <div class="header-content">
+          <div class="logo">VInspect</div>
+          <div class="user-info">
+            <span class="user-name" id="userNameDisplay"></span>
+            <button id="logout-btn" class="logout-btn">
+              <i class="fas fa-sign-out-alt mr-1"></i> Odjava
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="dashboard-container">
+      <div class="sidebar">
+        <ul class="sidebar-menu">
+          <li class="sidebar-item">
+            <a href="dashboard.html" class="sidebar-link">
+              <i class="fas fa-tachometer-alt sidebar-icon"></i> Dashboard
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="users.html" class="sidebar-link active">
+              <i class="fas fa-users sidebar-icon"></i> Korisnici
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="vehicles.html" class="sidebar-link">
+              <i class="fas fa-car sidebar-icon"></i> Vozila
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="stations.html" class="sidebar-link">
+              <i class="fas fa-building sidebar-icon"></i> Stanice
+            </a>
+          </li>
+          <li class="sidebar-item">
+            <a href="inspections.html" class="sidebar-link">
+              <i class="fas fa-clipboard-check sidebar-icon"></i> Pregledi
+            </a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="dashboard-content">
+        <div
+          class="page-header d-flex justify-content-between align-items-center"
+        >
+          <div>
+            <h1 class="page-title">Korisnici</h1>
+            <p class="page-subtitle">Upravljanje korisnicima u sistemu</p>
+          </div>
+          <button id="addUserBtn" class="btn btn-primary">
+            <i class="fas fa-plus mr-1"></i> Dodaj korisnika
+          </button>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Svi korisnici</h2>
+            <div class="filter-controls">
+              <select id="roleFilter" class="form-control">
+                <option value="">Sve uloge</option>
+                <option value="admin">Administratori</option>
+                <option value="vehicle_owner">Vlasnici vozila</option>
+                <option value="inspection_staff">Osoblje za pregled</option>
+              </select>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Ime</th>
+                  <th>Email</th>
+                  <th>Uloga</th>
+                  <th>Akcije</th>
+                </tr>
+              </thead>
+              <tbody id="usersTable">
+                <tr>
+                  <td colspan="5" class="text-center">Učitavanje...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- User Form Modal -->
+    <div class="modal-backdrop" id="userModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 class="modal-title" id="modalTitle">Dodaj novog korisnika</h3>
+          <button class="modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="userForm">
+            <input type="hidden" id="userId" />
+
+            <div class="form-group">
+              <label for="name" class="form-label">Ime i prezime</label>
+              <input type="text" id="name" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label for="email" class="form-label">Email</label>
+              <input type="email" id="email" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+              <label for="password" class="form-label">Lozinka</label>
+              <input type="password" id="password" class="form-control" />
+              <small class="form-text" id="passwordNote"
+                >Lozinka mora sadržavati najmanje 6 znakova</small
+              >
+            </div>
+
+            <div class="form-group">
+              <label for="role" class="form-label">Uloga</label>
+              <select id="role" class="form-control" required>
+                <option value="admin">Administrator</option>
+                <option value="vehicle_owner">Vlasnik vozila</option>
+                <option value="inspection_staff">Osoblje za pregled</option>
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="cancelBtn">Odustani</button>
+          <button class="btn btn-primary" id="saveUserBtn">Sačuvaj</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal-backdrop" id="deleteModal">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3 class="modal-title">Potvrda brisanja</h3>
+          <button class="modal-close" id="closeDeleteModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <p>Da li ste sigurni da želite obrisati ovog korisnika?</p>
+          <p>
+            Svi povezani podaci (vozila i pregledi) će takođe biti obrisani.
+          </p>
+          <input type="hidden" id="deleteUserId" />
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-outline" id="cancelDeleteBtn">Odustani</button>
+          <button class="btn btn-danger" id="confirmDeleteBtn">Obriši</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="../../assets/js/api.js"></script>
+    <script src="../../assets/js/auth.js"></script>
+    <script src="../../assets/js/users.js"></script>
+    <script>
+      let users = [];
+
+      // Initialize auth and check access
+      document.addEventListener("DOMContentLoaded", async function () {
+        // Check if user is authenticated
+        if (!api.isAuthenticated()) {
+          auth.redirectToLogin();
+          return;
+        }
+
+        const user = auth.loadUserFromToken();
+        if (!user || user.role !== "admin") {
+          auth.redirectToDashboard();
+          return;
+        }
+
+        // Display user name
+        document.getElementById("userNameDisplay").textContent = user.email;
+
+        // Add event listeners
+        document
+          .getElementById("addUserBtn")
+          .addEventListener("click", showAddUserModal);
+        document
+          .getElementById("closeModalBtn")
+          .addEventListener("click", closeUserModal);
+        document
+          .getElementById("cancelBtn")
+          .addEventListener("click", closeUserModal);
+        document
+          .getElementById("saveUserBtn")
+          .addEventListener("click", saveUser);
+
+        document
+          .getElementById("closeDeleteModalBtn")
+          .addEventListener("click", closeDeleteModal);
+        document
+          .getElementById("cancelDeleteBtn")
+          .addEventListener("click", closeDeleteModal);
+        document
+          .getElementById("confirmDeleteBtn")
+          .addEventListener("click", deleteUser);
+
+        document
+          .getElementById("roleFilter")
+          .addEventListener("change", filterUsers);
+
+        // Load users
+        await loadUsers();
+      });
+
+      async function loadUsers() {
+        try {
+          users = await UserManager.getAllUsers();
+          displayUsers(users);
+        } catch (error) {
+          console.error("Error loading users:", error);
+          showNotification("Greška prilikom učitavanja korisnika", "error");
+        }
+      }
+
+      function displayUsers(usersToShow) {
+        const tableBody = document.getElementById("usersTable");
+
+        if (usersToShow.length === 0) {
+          tableBody.innerHTML =
+            '<tr><td colspan="5" class="text-center">Nema registrovanih korisnika</td></tr>';
+          return;
+        }
+
+        let html = "";
+        usersToShow.forEach((user, index) => {
+          const roleName = UserManager.getRoleName(user.role);
+
+          html += `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${user.name}</td>
+                <td>${user.email}</td>
+                <td>${roleName}</td>
+                <td class="action-cell">
+                    <button class="btn btn-primary btn-sm btn-action" onclick="editUser(${
+                      user.id
+                    })">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm btn-action" onclick="showDeleteModal(${
+                      user.id
+                    })">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+            `;
+        });
+
+        tableBody.innerHTML = html;
+      }
+
+      function filterUsers() {
+        const role = document.getElementById("roleFilter").value;
+
+        if (!role) {
+          displayUsers(users);
+          return;
+        }
+
+        const filtered = users.filter((user) => user.role === role);
+        displayUsers(filtered);
+      }
+
+      function showAddUserModal() {
+        document.getElementById("modalTitle").textContent =
+          "Dodaj novog korisnika";
+        document.getElementById("userForm").reset();
+        document.getElementById("userId").value = "";
+        document.getElementById("password").required = true;
+        document.getElementById("passwordNote").textContent =
+          "Lozinka mora sadržavati najmanje 6 znakova";
+        document.getElementById("userModal").classList.add("show");
+      }
+
+      async function editUser(id) {
+        try {
+          const user = await UserManager.getUserById(id);
+
+          document.getElementById("modalTitle").textContent = "Uredi korisnika";
+          document.getElementById("userId").value = user.id;
+          document.getElementById("name").value = user.name;
+          document.getElementById("email").value = user.email;
+          document.getElementById("password").required = false;
+          document.getElementById("passwordNote").textContent =
+            "Ostavite prazno ako ne želite mijenjati lozinku";
+          document.getElementById("role").value = user.role;
+
+          document.getElementById("userModal").classList.add("show");
+        } catch (error) {
+          console.error("Error loading user:", error);
+          showNotification(
+            "Greška prilikom učitavanja podataka o korisniku",
+            "error"
+          );
+        }
+      }
+
+      function closeUserModal() {
+        document.getElementById("userModal").classList.remove("show");
+      }
+
+      async function saveUser() {
+        const userId = document.getElementById("userId").value;
+
+        const userData = {
+          name: document.getElementById("name").value,
+          email: document.getElementById("email").value,
+          role: document.getElementById("role").value,
+        };
+
+        const password = document.getElementById("password").value;
+        if (password) {
+          if (password.length < 6) {
+            showNotification(
+              "Lozinka mora sadržavati najmanje 6 znakova",
+              "error"
+            );
+            return;
+          }
+          userData.password = password;
+        }
+
+        try {
+          if (userId) {
+            // Update existing user
+            await UserManager.updateUser(userId, userData);
+          } else {
+            // Create new user
+            if (!userData.password) {
+              showNotification(
+                "Lozinka je obavezna za nove korisnike",
+                "error"
+              );
+              return;
+            }
+            await UserManager.addUser(userData);
+          }
+
+          // Close modal and reload users
+          closeUserModal();
+          await loadUsers();
+        } catch (error) {
+          console.error("Error saving user:", error);
+          showNotification(
+            error.message || "Greška prilikom spremanja korisnika",
+            "error"
+          );
+        }
+      }
+
+      function showDeleteModal(id) {
+        document.getElementById("deleteUserId").value = id;
+        document.getElementById("deleteModal").classList.add("show");
+      }
+
+      function closeDeleteModal() {
+        document.getElementById("deleteModal").classList.remove("show");
+      }
+
+      async function deleteUser() {
+        const userId = document.getElementById("deleteUserId").value;
+
+        try {
+          await UserManager.deleteUser(userId);
+
+          // Close modal and reload users
+          closeDeleteModal();
+          await loadUsers();
+        } catch (error) {
+          console.error("Error deleting user:", error);
+          showNotification(
+            error.message || "Greška prilikom brisanja korisnika",
+            "error"
+          );
+        }
+      }
+    </script>
+  </body>
+</html>

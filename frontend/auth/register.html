@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="bs">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Registracija - VInspect</title>
+    <link rel="stylesheet" href="../assets/css/style.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="auth-page">
+      <div class="auth-card">
+        <div class="auth-header">
+          <h1 class="auth-title">VInspect</h1>
+          <p class="auth-subtitle">Kreirajte novi korisnički račun</p>
+        </div>
+
+        <form id="registerForm">
+          <div class="form-group">
+            <label for="name" class="form-label">Ime i prezime</label>
+            <input type="text" id="name" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label for="email" class="form-label">Email</label>
+            <input type="email" id="email" class="form-control" required />
+          </div>
+
+          <div class="form-group">
+            <label for="password" class="form-label">Lozinka</label>
+            <input
+              type="password"
+              id="password"
+              class="form-control"
+              required
+            />
+            <small class="form-text"
+              >Lozinka mora sadržavati najmanje 6 znakova</small
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword" class="form-label"
+              >Potvrdi lozinku</label
+            >
+            <input
+              type="password"
+              id="confirmPassword"
+              class="form-control"
+              required
+            />
+          </div>
+
+          <div
+            id="registerError"
+            class="error-message mb-3"
+            style="display: none"
+          ></div>
+          <div
+            id="registerSuccess"
+            class="success-message mb-3"
+            style="display: none"
+          ></div>
+
+          <button type="submit" class="btn btn-primary w-100">
+            Registruj se
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <p>
+            Već imate račun?
+            <a href="login.html" class="auth-link">Prijavite se</a>
+          </p>
+          <p><a href="../index.html" class="auth-link">Nazad na početnu</a></p>
+        </div>
+      </div>
+    </div>
+
+    <script src="../assets/js/api.js"></script>
+    <script src="../assets/js/auth.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // If user is already logged in, redirect to dashboard
+        if (api.isAuthenticated()) {
+          const user = auth.loadUserFromToken();
+          if (user) {
+            auth.redirectToDashboard();
+          }
+        }
+
+        const registerForm = document.getElementById("registerForm");
+        const errorMsg = document.getElementById("registerError");
+        const successMsg = document.getElementById("registerSuccess");
+
+        registerForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
+
+          const name = document.getElementById("name").value;
+          const email = document.getElementById("email").value;
+          const password = document.getElementById("password").value;
+          const confirmPassword =
+            document.getElementById("confirmPassword").value;
+
+          // Clear previous messages
+          errorMsg.style.display = "none";
+          successMsg.style.display = "none";
+
+          // Validate form
+          if (password.length < 6) {
+            errorMsg.textContent = "Lozinka mora sadržavati najmanje 6 znakova";
+            errorMsg.style.display = "block";
+            return;
+          }
+
+          if (password !== confirmPassword) {
+            errorMsg.textContent = "Lozinke se ne podudaraju";
+            errorMsg.style.display = "block";
+            return;
+          }
+
+          try {
+            const result = await auth.register({ name, email, password });
+
+            if (result.success) {
+              successMsg.textContent =
+                "Registracija uspješna! Možete se prijaviti.";
+              successMsg.style.display = "block";
+              registerForm.reset();
+
+              // Redirect to login page after 2 seconds
+              setTimeout(() => {
+                window.location.href = "login.html";
+              }, 2000);
+            } else {
+              errorMsg.textContent = result.error;
+              errorMsg.style.display = "block";
+            }
+          } catch (error) {
+            errorMsg.textContent =
+              error.message || "Greška prilikom registracije";
+            errorMsg.style.display = "block";
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
