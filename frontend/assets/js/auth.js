@@ -123,21 +123,21 @@ class Auth {
   /**
    * Logout current user
    */
+  // U auth.js datoteci
   logout() {
     api.removeToken();
     this.currentUser = null;
     this.userRole = null;
-    this.redirectToLogin();
-  }
 
+    const basePath = window.location.origin + "/V-Inspect/frontend";
+    window.location.href = `${basePath}/auth/login.html`;
+  }
   /**
    * Redirect to login page
    */
   redirectToLogin() {
-    // Samo preusmjeri ako nije već na login ili register stranici
-    if (!window.location.pathname.includes("/auth/")) {
-      window.location.href = "../auth/login.html";
-    }
+    const basePath = window.location.origin + "/V-Inspect/frontend";
+    window.location.href = `${basePath}/auth/login.html`;
   }
 
   /**
@@ -149,16 +149,18 @@ class Auth {
       return;
     }
 
-    // Koristi relativne putanje
+    // Koristi apsolutnu putanju s window.location.origin
+    const basePath = window.location.origin + "/V-Inspect/frontend";
+
     switch (this.userRole) {
       case "admin":
-        window.location.href = "../pages/admin/dashboard.html";
+        window.location.href = `${basePath}/pages/admin/dashboard.html`;
         break;
       case "vehicle_owner":
-        window.location.href = "../pages/vehicle-owner/dashboard.html";
+        window.location.href = `${basePath}/pages/vehicle-owner/dashboard.html`;
         break;
       case "inspection_staff":
-        window.location.href = "../pages/inspection-staff/dashboard.html";
+        window.location.href = `${basePath}/pages/inspection-staff/dashboard.html`;
         break;
       default:
         this.redirectToLogin();
