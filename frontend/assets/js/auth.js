@@ -134,9 +134,9 @@ class Auth {
    * Redirect to login page
    */
   redirectToLogin() {
-    // Only redirect if not already on login or register page
+    // Samo preusmjeri ako nije već na login ili register stranici
     if (!window.location.pathname.includes("/auth/")) {
-      window.location.href = "/auth/login.html";
+      window.location.href = "../auth/login.html";
     }
   }
 
@@ -149,15 +149,16 @@ class Auth {
       return;
     }
 
+    // Koristi relativne putanje
     switch (this.userRole) {
       case "admin":
-        window.location.href = "/pages/admin/dashboard.html";
+        window.location.href = "../pages/admin/dashboard.html";
         break;
       case "vehicle_owner":
-        window.location.href = "/pages/vehicle-owner/dashboard.html";
+        window.location.href = "../pages/vehicle-owner/dashboard.html";
         break;
       case "inspection_staff":
-        window.location.href = "/pages/inspection-staff/dashboard.html";
+        window.location.href = "../pages/inspection-staff/dashboard.html";
         break;
       default:
         this.redirectToLogin();
