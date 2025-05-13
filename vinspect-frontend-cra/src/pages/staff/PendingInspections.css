@@ -1,0 +1,196 @@
+/* src/pages/staff/PendingInspections.css */
+.pending-inspections-container {
+  width: 100%;
+}
+
+.pending-inspections-container h2 {
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+}
+
+.inspections-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 1.5rem;
+}
+
+/* Styles for the inspection list */
+.inspections-list-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.inspections-list {
+  max-height: 650px;
+  overflow-y: auto;
+}
+
+.inspection-item {
+  display: flex;
+  padding: 1rem;
+  border-bottom: 1px solid #ecf0f1;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.inspection-item:hover {
+  background-color: #f5f7fa;
+}
+
+.inspection-item.selected {
+  background-color: #3498db;
+  color: white;
+}
+
+.inspection-time {
+  min-width: 80px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+}
+
+.inspection-info {
+  flex: 1;
+}
+
+.inspection-info h4 {
+  margin: 0 0 0.5rem 0;
+}
+
+.inspection-info p {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.owner-name {
+  color: #7f8c8d;
+}
+
+.inspection-item.selected .owner-name {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.no-inspections {
+  padding: 2rem;
+  text-align: center;
+  color: #7f8c8d;
+}
+
+/* Styles for the inspection details section */
+.inspection-details-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+}
+
+.no-selection {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+  color: #7f8c8d;
+  text-align: center;
+  font-style: italic;
+}
+
+.inspection-details h3 {
+  margin-top: 0;
+  margin-bottom: 1.5rem;
+  color: #2c3e50;
+  border-bottom: 1px solid #ecf0f1;
+  padding-bottom: 0.5rem;
+}
+
+.details-section {
+  margin-bottom: 1.5rem;
+}
+
+.details-section h4 {
+  margin-top: 0;
+  margin-bottom: 0.8rem;
+  color: #3498db;
+  font-size: 1.1rem;
+}
+
+.detail-item {
+  display: flex;
+  margin-bottom: 0.5rem;
+}
+
+.detail-item > span:first-child {
+  font-weight: bold;
+  min-width: 120px;
+  color: #7f8c8d;
+}
+
+.inspection-form {
+  margin-top: 2rem;
+  border-top: 1px solid #ecf0f1;
+  padding-top: 1.5rem;
+}
+
+.inspection-form h4 {
+  margin-top: 0;
+  margin-bottom: 1rem;
+  color: #2c3e50;
+}
+
+.radio-group {
+  display: flex;
+  gap: 1.5rem;
+  margin-top: 0.5rem;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.radio-label input {
+  margin-right: 0.5rem;
+}
+
+.form-group {
+  margin-bottom: 1rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.btn-secondary {
+  background-color: #95a5a6;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+  .inspections-content {
+    grid-template-columns: 1fr;
+  }
+
+  .inspections-list {
+    max-height: 300px;
+  }
+}
