@@ -14,8 +14,11 @@ import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import NotFound from "./pages/NotFound";
 import Unauthorized from "./pages/Unauthorized";
+
 // Admin stranice
 import Users from "./pages/admin/Users";
+import Vehicles from "./pages/admin/Vehicles";
+import Stations from "./pages/admin/Stations";
 
 // Vlasnik vozila stranice
 import MyVehicles from "./pages/owner/MyVehicles";
@@ -50,22 +53,8 @@ function App() {
             {/* Admin rute */}
             <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
               <Route path="/admin/users" element={<Users />} />
-              <Route
-                path="/admin/vehicles"
-                element={
-                  <Layout>
-                    <div>Vehicle Management</div>
-                  </Layout>
-                }
-              />
-              <Route
-                path="/admin/stations"
-                element={
-                  <Layout>
-                    <div>Station Management</div>
-                  </Layout>
-                }
-              />
+              <Route path="/admin/vehicles" element={<Vehicles />} />
+              <Route path="/admin/stations" element={<Stations />} />
               <Route
                 path="/admin/inspections"
                 element={
