@@ -4,14 +4,14 @@ V-Inspect is a web-based system that enables vehicle owners to register their ve
 
 ## 🔧 Tech Stack
 
-- **Frontend**: React
+- **Frontend**: HTML, CSS, JavaScript
 - **Backend**: PHP - FlightPHP (RESTful API)
 - **Database**: MySQL
 
 ## 👨‍💻 Project Roles
 
 - **Backend**: Ilhan Klisura (PHP - FlightPHP + MySQL)
-- **Frontend**: Harun Musa (React.js)
+- **Frontend**: Harun Musa (HTML, CSS, JavaScript)
 
 ## 📌 Core Features (Release 1 - MVP)
 
