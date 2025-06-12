@@ -1,21 +1,29 @@
 <?php
-
-require_once __DIR__ . '/../rest/services/AuthService.php';
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 class AuthMiddleware {
     public static function authenticate() {
-        $headers = getallheaders();
+        $headers = function_exists('apache_request_headers')
+            ? apache_request_headers()
+            : getallheaders();
+
         if (!isset($headers['Authorization'])) {
-            Flight::halt(401, "Missing Authorization header");
+            Flight::halt(401, "Missing token");
         }
 
-        $token = str_replace("Bearer ", "", $headers['Authorization']);
+        $authHeader = $headers['Authorization'];
+        if (!str_starts_with($authHeader, 'Bearer ')) {
+            Flight::halt(401, "Invalid token format");
+        }
+
+        $token = str_replace('Bearer ', '', $authHeader);
+
         try {
-            $authService = new AuthService();
-            $user = $authService->decode_token($token);
-            Flight::set('user', $user);
+            $decoded = JWT::decode($token, new Key(Config::JWT_SECRET(), 'HS256'));
+            Flight::set('user', (array) $decoded->user); // Convert stdClass to array
         } catch (Exception $e) {
-            Flight::halt(401, "Invalid or expired token");
+            Flight::halt(401, 'Invalid token: ' . $e->getMessage());
         }
     }
 
@@ -23,15 +31,15 @@ class AuthMiddleware {
         self::authenticate();
         $user = Flight::get('user');
         if ($user['role'] !== $role) {
-            Flight::halt(403, "Forbidden: Insufficient privileges");
+            Flight::halt(403, 'Access denied');
         }
     }
 
-    public static function authorizeRoles($roles = []) {
+    public static function authorizeRoles($roles) {
         self::authenticate();
         $user = Flight::get('user');
         if (!in_array($user['role'], $roles)) {
-            Flight::halt(403, "Forbidden: Role not allowed");
+            Flight::halt(403, 'Access denied');
         }
     }
 }

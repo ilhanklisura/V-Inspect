@@ -4,14 +4,13 @@ require_once __DIR__ . '/../../middleware/AuthMiddleware.php';
 /**
  * @OA\Get(
  *     path="/stations",
- *     summary="Get all stations",
+ *     summary="Get all inspection stations",
  *     tags={"Stations"},
  *     security={{"bearerAuth":{}}},
  *     @OA\Response(response=200, description="List of stations")
  * )
  */
 Flight::route('GET /stations', function () {
-    AuthMiddleware::authenticate();
     Flight::json(Flight::station_service()->get_all());
 });
 
@@ -26,14 +25,13 @@ Flight::route('GET /stations', function () {
  * )
  */
 Flight::route('GET /stations/@id', function ($id) {
-    AuthMiddleware::authenticate();
     Flight::json(Flight::station_service()->get_by_id($id));
 });
 
 /**
  * @OA\Post(
  *     path="/stations",
- *     summary="Create new station (admin only)",
+ *     summary="Add a new station (admin only)",
  *     tags={"Stations"},
  *     security={{"bearerAuth":{}}},
  *     @OA\RequestBody(
@@ -43,15 +41,15 @@ Flight::route('GET /stations/@id', function ($id) {
  *             @OA\Property(property="location", type="string")
  *         )
  *     ),
- *     @OA\Response(response=200, description="Station created")
+ *     @OA\Response(response=200, description="Station added")
  * )
  */
 Flight::route('POST /stations', function () {
     AuthMiddleware::authorizeRole(Roles::ADMIN);
     $data = Flight::request()->data->getData();
     Flight::json([
-        'message' => 'Station created successfully',
-        'data' => Flight::station_service()->add($data)
+        "message" => "Station added.",
+        "data" => Flight::station_service()->add($data)
     ]);
 });
 
@@ -75,8 +73,8 @@ Flight::route('PUT /stations/@id', function ($id) {
     AuthMiddleware::authorizeRole(Roles::ADMIN);
     $data = Flight::request()->data->getData();
     Flight::json([
-        'message' => 'Station updated successfully',
-        'data' => Flight::station_service()->update($data, $id)
+        "message" => "Station updated.",
+        "data" => Flight::station_service()->update($data, $id)
     ]);
 });
 
@@ -93,5 +91,5 @@ Flight::route('PUT /stations/@id', function ($id) {
 Flight::route('DELETE /stations/@id', function ($id) {
     AuthMiddleware::authorizeRole(Roles::ADMIN);
     Flight::station_service()->delete($id);
-    Flight::json(['message' => 'Station deleted successfully']);
+    Flight::json(['message' => 'Station deleted']);
 });

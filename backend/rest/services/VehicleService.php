@@ -1,26 +1,29 @@
 <?php
 require_once 'BaseService.php';
-require_once __DIR__ . '/../dao/VehicleDao.php';
+require_once __DIR__ . '/../factories/DaoFactory.php';
 
 class VehicleService extends BaseService {
     public function __construct() {
-        parent::__construct(new VehicleDao());
-    }
-
-    public function add($entity) {
-        if (!isset($entity['vin']) || strlen($entity['vin']) < 3) {
-            Flight::halt(400, "VIN is required and must be at least 3 characters.");
-        }
-
-        $existing = $this->dao->get_by_vin($entity['vin']);
-        if ($existing) {
-            Flight::halt(409, "Vehicle with this VIN already exists.");
-        }
-
-        return parent::add($entity);
+        parent::__construct(DaoFactory::create('vehicles'));
     }
 
     public function get_by_owner($owner_id) {
         return $this->dao->get_by_owner($owner_id);
+    }
+
+    public function get_by_vin($vin) {
+        return $this->dao->get_by_vin($vin);
+    }
+
+    public function add($entity) {
+        if (!isset($entity['owner_id'], $entity['make'], $entity['model'], $entity['vin'], $entity['year'])) {
+            Flight::halt(400, "Missing required fields.");
+        }
+
+        if ($this->dao->get_by_vin($entity['vin'])) {
+            Flight::halt(409, "Vehicle with this VIN already exists.");
+        }
+
+        return parent::add($entity);
     }
 }

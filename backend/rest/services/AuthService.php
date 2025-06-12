@@ -1,39 +1,54 @@
 <?php
-require_once __DIR__ . '/../dao/AuthDao.php';
-require_once __DIR__ . '/../config.php';
-require_once __DIR__ . '/../../Roles.php';
-use \Firebase\JWT\JWT;
-use \Firebase\JWT\Key;
+require_once 'BaseService.php';
+require_once __DIR__ . '/../dao/UserDao.php';
+require_once __DIR__ . '/../../roles/Roles.php';
+use Firebase\JWT\JWT;
 
-class AuthService {
-    private $dao;
+class AuthService extends BaseService {
+    private $user_dao;
 
     public function __construct() {
-        $this->dao = new AuthDao();
+        $this->user_dao = new UserDao();
+        parent::__construct($this->user_dao);
     }
 
-    public function login($email, $password) {
-        $user = $this->dao->get_user_by_email($email);
+    public function register($data) {
+        if (!isset($data['email']) || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
+            return ['success' => false, 'error' => 'Valid email is required'];
+        }
 
-        if (!$user || !password_verify($password, $user['password'])) {
-            Flight::halt(401, "Invalid email or password");
+        if (!isset($data['password']) || strlen($data['password']) < 6) {
+            return ['success' => false, 'error' => 'Password must be at least 6 characters'];
+        }
+
+        if ($this->user_dao->get_by_email($data['email'])) {
+            return ['success' => false, 'error' => 'Email already exists'];
+        }
+
+        $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
+        $data['role'] = Roles::VEHICLE_OWNER;
+
+        $user = parent::add($data);
+        unset($user['password']);
+
+        return ['success' => true, 'data' => $user];
+    }
+
+    public function login($data) {
+        $user = $this->user_dao->get_by_email($data['email']);
+
+        if (!$user || !password_verify($data['password'], $user['password'])) {
+            return ['success' => false, 'error' => 'Invalid email or password'];
         }
 
         unset($user['password']);
 
-        $payload = [
-            'user_id' => $user['id'],
-            'email' => $user['email'],
-            'role' => $user['role'],
+        $token = JWT::encode([
+            'user' => $user,
+            'iat' => time(),
             'exp' => time() + (60 * 60 * 24)
-        ];
+        ], Config::JWT_SECRET(), 'HS256');
 
-        $jwt = JWT::encode($payload, Config::JWT_SECRET(), 'HS256');
-
-        return ['token' => $jwt, 'user' => $user];
-    }
-
-    public function decode_token($token) {
-        return (array) JWT::decode($token, new Key(Config::JWT_SECRET(), 'HS256'));
+        return ['success' => true, 'data' => array_merge($user, ['token' => $token])];
     }
 }

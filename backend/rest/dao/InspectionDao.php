@@ -14,6 +14,10 @@ class InspectionDao extends BaseDao {
         return $this->query_unique("SELECT * FROM inspections WHERE id = :id", ["id" => $id]);
     }
 
+    public function get_by_vehicle_id($vehicle_id) {
+        return $this->query("SELECT * FROM inspections WHERE vehicle_id = :vehicle_id", ["vehicle_id" => $vehicle_id]);
+    }
+
     public function get_by_vehicle_owner($owner_id) {
         $query = "
             SELECT i.* FROM inspections i

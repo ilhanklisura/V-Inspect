@@ -1,66 +1,70 @@
 <?php
+
 require './vendor/autoload.php';
 
-require_once 'rest/config.php';
-require_once 'Roles.php';
-
-require_once 'rest/services/UserService.php';
-require_once 'rest/services/AuthService.php';
-require_once 'rest/services/VehicleService.php';
-require_once 'rest/services/StationService.php';
-require_once 'rest/services/InspectionService.php';
-
-require_once 'middleware/AuthMiddleware.php';
-
-// Register all services
-Flight::register('user_service', 'UserService');
-Flight::register('vehicle_service', 'VehicleService');
-Flight::register('station_service', 'StationService');
-Flight::register('inspection_service', 'InspectionService');
-
-// Routes
-require_once 'rest/routes/UserRoutes.php';
-require_once 'rest/routes/AuthRoutes.php';
-require_once 'rest/routes/VehicleRoutes.php';
-require_once 'rest/routes/StationRoutes.php';
-require_once 'rest/routes/InspectionRoutes.php';
-
 // CORS headers
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header("Access-Control-Allow-Origin: *"); // ili stavi frontend URL
+header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
-// Handle preflight
+// Preflight OPTIONS request
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
 
-// Global Auth Guard
+// Middleware
+require_once './middleware/AuthMiddleware.php';
+
+// Services
+require_once './rest/services/AuthService.php';
+require_once './rest/services/UserService.php';
+require_once './rest/services/VehicleService.php';
+require_once './rest/services/StationService.php';
+require_once './rest/services/InspectionService.php';
+
+// Register services
+Flight::register('auth_service', 'AuthService');
+Flight::register('auth_middleware', 'AuthMiddleware');
+Flight::register('user_service', 'UserService');
+Flight::register('vehicle_service', 'VehicleService');
+Flight::register('station_service', 'StationService');
+Flight::register('inspection_service', 'InspectionService');
+
+// Global authentication middleware (except public routes)
 Flight::route('/*', function () {
-    $publicRoutes = [
+    $public_routes = [
         '/auth/login',
-        '/auth/register'
+        '/auth/register',
+        '/docs',
+        '/docs/',
+        '/docs/index.html',
+        '/docs/swagger.php',
+        '/public/v1/docs',
+        '/public/v1/docs/',
+        '/public/v1/docs/swagger.php',
+        '/public/v1/docs/index.html'
     ];
 
-    foreach ($publicRoutes as $route) {
-        if (strpos(Flight::request()->url, $route) === 0) return true;
+
+    $request_url = Flight::request()->url;
+    foreach ($public_routes as $route) {
+        if (strpos($request_url, $route) === 0) {
+            return true;
+        }
     }
 
-    $headers = getallheaders();
-    if (!isset($headers['Authorization'])) {
-        Flight::halt(401, "Authorization header missing");
-    }
-
-    $token = str_replace("Bearer ", "", $headers['Authorization']);
-
-    try {
-        $authService = new AuthService();
-        $decoded = $authService->decode_token($token);
-        Flight::set('user', $decoded);
-    } catch (Exception $e) {
-        Flight::halt(401, "Invalid or expired token: " . $e->getMessage());
-    }
+    Flight::auth_middleware()->authenticate();
+    return true;
 });
 
+
+// Route files
+require_once './rest/routes/AuthRoutes.php';
+require_once './rest/routes/UserRoutes.php';
+require_once './rest/routes/VehicleRoutes.php';
+require_once './rest/routes/StationRoutes.php';
+require_once './rest/routes/InspectionRoutes.php';
+
+// Start app
 Flight::start();
