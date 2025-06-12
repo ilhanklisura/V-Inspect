@@ -5,17 +5,23 @@
  *   @OA\Info(
  *     title="V-Inspect API",
  *     version="1.0.0",
- *     description="Official API documentation for the V-Inspect web platform. This API enables full CRUD operations for managing users, inspections, stations, vehicles, and many more."
+ *     description="API za sistem tehničkih pregleda vozila. Omogućava registraciju korisnika, upravljanje vozilima, stanicama, tehničkim pregledima i korisnicima.",
+ *     @OA\Contact(
+ *       name="Ilhan Klisura",
+ *       email="work@ilhanklisura.com",
+ *       url="https://ilhanklisura.com"
+ *     )
  *   ),
  *   @OA\Server(
  *     url=LOCALSERVER,
- *     description="Local API Server"
+ *     description="Lokalni API server"
  *   ),
- *  @OA\Server(
- *    url=PRODSERVER,
- *    description="Production API Server"
+ *   @OA\Server(
+ *     url=PRODSERVER,
+ *     description="Produkcijski API server"
  *   )
  * )
+ *
  * @OA\SecurityScheme(
  *     securityScheme="bearerAuth",
  *     type="http",

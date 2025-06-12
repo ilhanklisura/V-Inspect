@@ -27,7 +27,7 @@ Flight::route('GET /inspections', function () {
 Flight::route('GET /inspections/my', function () {
     AuthMiddleware::authorizeRole(Roles::VEHICLE_OWNER);
     $user = Flight::get('user');
-    Flight::json(Flight::inspection_service()->get_by_owner($user['user_id']));
+    Flight::json(Flight::inspection_service()->get_by_vehicle_owner($user['user_id']));
 });
 
 /**
@@ -51,7 +51,7 @@ Flight::route('GET /inspections/@id', function ($id) {
         $user['role'] !== Roles::ADMIN &&
         $user['role'] !== Roles::INSPECTION_STAFF &&
         $inspection['vehicle_id'] &&
-        !in_array($inspection['vehicle_id'], array_column(Flight::inspection_service()->get_by_owner($user['user_id']), 'vehicle_id'))
+        !in_array($inspection['vehicle_id'], array_column(Flight::inspection_service()->get_by_vehicle_owner($user['user_id']), 'vehicle_id'))
     ) {
         Flight::halt(403, "Not allowed to view this inspection.");
     }
@@ -134,4 +134,19 @@ Flight::route('DELETE /inspections/@id', function ($id) {
     AuthMiddleware::authorizeRole(Roles::ADMIN);
     Flight::inspection_service()->delete($id);
     Flight::json(['message' => 'Inspection deleted successfully']);
+});
+
+/**
+ * @OA\Get(
+ *     path="/inspections/owner/{owner_id}",
+ *     summary="Get inspections by vehicle owner",
+ *     tags={"Inspections"},
+ *     security={{"bearerAuth":{}}},
+ *     @OA\Parameter(name="owner_id", in="path", required=true, @OA\Schema(type="integer")),
+ *     @OA\Response(response=200, description="Inspections for a vehicle owner")
+ * )
+ */
+Flight::route('GET /inspections/owner/@owner_id', function ($owner_id) {
+    AuthMiddleware::authorizeRoles([Roles::INSPECTION_STAFF, Roles::ADMIN]);
+    Flight::json(Flight::inspection_service()->get_by_vehicle_owner($owner_id));
 });

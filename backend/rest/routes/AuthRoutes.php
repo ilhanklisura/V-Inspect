@@ -2,27 +2,6 @@
 
 /**
  * @OA\Post(
- *     path="/auth/login",
- *     summary="User login",
- *     tags={"Auth"},
- *     @OA\RequestBody(
- *         @OA\JsonContent(
- *             required={"email", "password"},
- *             @OA\Property(property="email", type="string"),
- *             @OA\Property(property="password", type="string")
- *         )
- *     ),
- *     @OA\Response(response=200, description="Login successful")
- * )
- */
-Flight::route('POST /auth/login', function () {
-    $data = Flight::request()->data->getData();
-    $service = new AuthService();
-    Flight::json($service->login($data['email'], $data['password']));
-});
-
-/**
- * @OA\Post(
  *     path="/auth/register",
  *     summary="Public user registration (vehicle_owner only)",
  *     tags={"Auth"},
@@ -30,22 +9,58 @@ Flight::route('POST /auth/login', function () {
  *         required=true,
  *         @OA\JsonContent(
  *             required={"name", "email", "password"},
- *             @OA\Property(property="name", type="string"),
- *             @OA\Property(property="email", type="string"),
- *             @OA\Property(property="password", type="string")
+ *             @OA\Property(property="name", type="string", example="Test User"),
+ *             @OA\Property(property="email", type="string", example="test@example.com"),
+ *             @OA\Property(property="password", type="string", example="test123")
  *         )
  *     ),
- *     @OA\Response(response=200, description="User registered successfully")
+ *     @OA\Response(response=200, description="User registered successfully"),
+ *     @OA\Response(response=409, description="Email already exists")
  * )
  */
 Flight::route('POST /auth/register', function () {
     $data = Flight::request()->data->getData();
 
-    $data['role'] = Roles::VEHICLE_OWNER;
+    $response = Flight::auth_service()->register($data);
 
-    $service = new UserService();
-    Flight::json([
-        "message" => "User registered successfully",
-        "data" => $service->add($data)
-    ]);
+    if ($response['success']) {
+        Flight::json([
+            'message' => 'User registered successfully',
+            'data' => $response['data']
+        ]);
+    } else {
+        Flight::halt(409, $response['error']);
+    }
+});
+
+/**
+ * @OA\Post(
+ *     path="/auth/login",
+ *     summary="User login",
+ *     tags={"Auth"},
+ *     @OA\RequestBody(
+ *         required=true,
+ *         @OA\JsonContent(
+ *             required={"email", "password"},
+ *             @OA\Property(property="email", type="string", example="test@example.com"),
+ *             @OA\Property(property="password", type="string", example="test123")
+ *         )
+ *     ),
+ *     @OA\Response(response=200, description="Login successful with JWT token"),
+ *     @OA\Response(response=401, description="Invalid credentials")
+ * )
+ */
+Flight::route('POST /auth/login', function () {
+    $data = Flight::request()->data->getData();
+
+    $response = Flight::auth_service()->login($data);
+
+    if ($response['success']) {
+        Flight::json([
+            'message' => 'Login successful',
+            'data' => $response['data']
+        ]);
+    } else {
+        Flight::halt(401, $response['error']);
+    }
 });
