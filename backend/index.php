@@ -7,7 +7,7 @@ if (php_sapi_name() === 'cli') {
 require './vendor/autoload.php';
 
 // CORS headers
-header("Access-Control-Allow-Origin: *"); // ili stavi frontend URL
+header("Access-Control-Allow-Origin: https://vinspect-frontend-pepwp.ondigitalocean.app");
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Authorization");
 
