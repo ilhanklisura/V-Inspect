@@ -1,16 +1,9 @@
-// src/components/dashboard/AdminDashboard.jsx
 import React, { useState, useEffect } from "react";
 import { Plus, Edit, Trash2 } from "lucide-react";
-import {
-  mockUsers,
-  vehiclesData,
-  inspectionsData,
-  stationsData,
-  nextUserId,
-  nextVehicleId,
-  nextInspectionId,
-  nextStationId,
-} from "../../data/mockData";
+import { userService } from "../../services/userService";
+import { vehicleService } from "../../services/vehicleService";
+import { inspectionService } from "../../services/inspectionService";
+import { stationService } from "../../services/stationService";
 import StatsCard from "../ui/StatsCard";
 import UserEditForm from "../forms/UserEditForm";
 import VehicleEditForm from "../forms/VehicleEditForm";
@@ -27,138 +20,140 @@ const AdminDashboard = () => {
   const [editingVehicle, setEditingVehicle] = useState(null);
   const [editingInspection, setEditingInspection] = useState(null);
   const [editingStation, setEditingStation] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const refreshData = () => {
-    setAllVehicles([...vehiclesData]);
-    setAllInspections([...inspectionsData]);
-    setAllUsers([...mockUsers]);
-    setAllStations([...stationsData]);
+  const refreshData = async () => {
+    try {
+      setLoading(true);
+      const [vehicles, inspections, users, stations] = await Promise.all([
+        vehicleService.getVehicles(),
+        inspectionService.getInspections(),
+        userService.getUsers(),
+        stationService.getStations(),
+      ]);
+
+      setAllVehicles(vehicles);
+      setAllInspections(inspections);
+      setAllUsers(users);
+      setAllStations(stations);
+    } catch (error) {
+      console.error("Error loading admin data:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
     refreshData();
   }, []);
 
-  const deleteUser = (userId) => {
-    const index = mockUsers.findIndex((u) => u.id === userId);
-    if (index !== -1) {
-      mockUsers.splice(index, 1);
+  const deleteUser = async (userId) => {
+    try {
+      await userService.deleteUser(userId);
       refreshData();
+    } catch (error) {
+      console.error("Error deleting user:", error);
     }
   };
 
-  const deleteVehicle = (vehicleId) => {
-    const index = vehiclesData.findIndex((v) => v.id === vehicleId);
-    if (index !== -1) {
-      vehiclesData.splice(index, 1);
-
-      const inspectionIndexes = inspectionsData
-        .map((insp, idx) => (insp.vehicle_id === vehicleId ? idx : -1))
-        .filter((idx) => idx !== -1)
-        .reverse();
-
-      inspectionIndexes.forEach((idx) => inspectionsData.splice(idx, 1));
+  const deleteVehicle = async (vehicleId) => {
+    try {
+      await vehicleService.deleteVehicle(vehicleId);
       refreshData();
+    } catch (error) {
+      console.error("Error deleting vehicle:", error);
     }
   };
 
-  const deleteInspection = (inspectionId) => {
-    const index = inspectionsData.findIndex((i) => i.id === inspectionId);
-    if (index !== -1) {
-      inspectionsData.splice(index, 1);
+  const deleteInspection = async (inspectionId) => {
+    try {
+      await inspectionService.deleteInspection(inspectionId);
       refreshData();
+    } catch (error) {
+      console.error("Error deleting inspection:", error);
     }
   };
 
-  const deleteStation = (stationId) => {
-    const index = stationsData.findIndex((s) => s.id === stationId);
-    if (index !== -1) {
-      stationsData.splice(index, 1);
+  const deleteStation = async (stationId) => {
+    try {
+      await stationService.deleteStation(stationId);
       refreshData();
+    } catch (error) {
+      console.error("Error deleting station:", error);
     }
   };
 
-  const saveUser = (userData) => {
-    if (userData.id) {
-      const index = mockUsers.findIndex((u) => u.id === userData.id);
-      if (index !== -1) {
-        mockUsers[index] = { ...mockUsers[index], ...userData };
+  const saveUser = async (userData) => {
+    try {
+      if (userData.id) {
+        await userService.updateUser(userData.id, userData);
+      } else {
+        await userService.createUser(userData);
       }
-    } else {
-      const newUser = {
-        ...userData,
-        id: nextUserId++,
-        created_at: new Date().toISOString().split("T")[0],
-      };
-      mockUsers.push(newUser);
+      setEditingUser(null);
+      refreshData();
+    } catch (error) {
+      console.error("Error saving user:", error);
     }
-    setEditingUser(null);
-    refreshData();
   };
 
-  const saveVehicle = (vehicleData) => {
-    if (vehicleData.id) {
-      const index = vehiclesData.findIndex((v) => v.id === vehicleData.id);
-      if (index !== -1) {
-        vehiclesData[index] = { ...vehiclesData[index], ...vehicleData };
+  const saveVehicle = async (vehicleData) => {
+    try {
+      if (vehicleData.id) {
+        await vehicleService.updateVehicle(vehicleData.id, vehicleData);
+      } else {
+        await vehicleService.createVehicle(vehicleData);
       }
-    } else {
-      const newVehicle = {
-        ...vehicleData,
-        id: nextVehicleId++,
-        created_at: new Date().toISOString().split("T")[0],
-      };
-      vehiclesData.push(newVehicle);
+      setEditingVehicle(null);
+      refreshData();
+    } catch (error) {
+      console.error("Error saving vehicle:", error);
     }
-    setEditingVehicle(null);
-    refreshData();
   };
 
-  const saveInspection = (inspectionData) => {
-    if (inspectionData.id) {
-      const index = inspectionsData.findIndex(
-        (i) => i.id === inspectionData.id
-      );
-      if (index !== -1) {
-        inspectionsData[index] = {
-          ...inspectionsData[index],
-          ...inspectionData,
-        };
+  const saveInspection = async (inspectionData) => {
+    try {
+      if (inspectionData.id) {
+        await inspectionService.updateInspection(
+          inspectionData.id,
+          inspectionData
+        );
+      } else {
+        await inspectionService.createInspection(inspectionData);
       }
-    } else {
-      const newInspection = {
-        ...inspectionData,
-        id: nextInspectionId++,
-        created_at: new Date().toISOString().split("T")[0],
-      };
-      inspectionsData.push(newInspection);
+      setEditingInspection(null);
+      refreshData();
+    } catch (error) {
+      console.error("Error saving inspection:", error);
     }
-    setEditingInspection(null);
-    refreshData();
   };
 
-  const saveStation = (stationData) => {
-    if (stationData.id) {
-      const index = stationsData.findIndex((s) => s.id === stationData.id);
-      if (index !== -1) {
-        stationsData[index] = { ...stationsData[index], ...stationData };
+  const saveStation = async (stationData) => {
+    try {
+      if (stationData.id) {
+        await stationService.updateStation(stationData.id, stationData);
+      } else {
+        await stationService.createStation(stationData);
       }
-    } else {
-      const newStation = {
-        ...stationData,
-        id: nextStationId++,
-        created_at: new Date().toISOString().split("T")[0],
-      };
-      stationsData.push(newStation);
+      setEditingStation(null);
+      refreshData();
+    } catch (error) {
+      console.error("Error saving station:", error);
     }
-    setEditingStation(null);
-    refreshData();
   };
 
   const totalUsers = allUsers.length;
   const totalVehicles = allVehicles.length;
   const totalInspections = allInspections.length;
   const totalStations = allStations.length;
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="text-center">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -200,74 +195,65 @@ const AdminDashboard = () => {
               color="yellow"
             />
             <StatsCard
-              title="Inspection Stations"
+              title="Total Stations"
               value={totalStations}
               color="purple"
             />
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Recent Inspections
-                </h2>
-              </div>
-              <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
-                {allInspections.slice(0, 10).map((inspection) => {
-                  const vehicle = allVehicles.find(
-                    (v) => v.id === inspection.vehicle_id
-                  );
-                  const station = allStations.find(
-                    (s) => s.id === inspection.station_id
-                  );
-                  return (
-                    <div key={inspection.id} className="px-6 py-4">
-                      <div className="flex justify-between items-center">
-                        <div>
-                          <p className="font-medium text-gray-900">
-                            {vehicle?.make} {vehicle?.model}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {station?.name}
-                          </p>
-                        </div>
-                        <span
-                          className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            inspection.status === "completed"
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {inspection.status}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Recent Vehicles
+              </h3>
+              <div className="space-y-3">
+                {allVehicles.slice(0, 5).map((vehicle) => (
+                  <div
+                    key={vehicle.id}
+                    className="flex justify-between items-center py-2 border-b border-gray-100"
+                  >
+                    <span className="font-medium">
+                      {vehicle.make} {vehicle.model}
+                    </span>
+                    <span className="text-sm text-gray-500">
+                      {vehicle.year}
+                    </span>
+                  </div>
+                ))}
               </div>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-xl font-semibold text-gray-900">
-                  Recent Users
-                </h2>
-              </div>
-              <div className="divide-y divide-gray-200 max-h-96 overflow-y-auto">
-                {allUsers.slice(0, 10).map((user) => (
-                  <div key={user.id} className="px-6 py-4">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium text-gray-900">{user.name}</p>
-                        <p className="text-sm text-gray-500">{user.email}</p>
-                      </div>
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
-                        {user.role.replace("_", " ").toUpperCase()}
+            <div className="bg-white rounded-lg shadow-md p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Recent Inspections
+              </h3>
+              <div className="space-y-3">
+                {allInspections.slice(0, 5).map((inspection) => {
+                  const vehicle = allVehicles.find(
+                    (v) => v.id === inspection.vehicle_id
+                  );
+                  return (
+                    <div
+                      key={inspection.id}
+                      className="flex justify-between items-center py-2 border-b border-gray-100"
+                    >
+                      <span className="font-medium">
+                        {vehicle
+                          ? `${vehicle.make} ${vehicle.model}`
+                          : "Unknown Vehicle"}
+                      </span>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs ${
+                          inspection.status === "completed"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }`}
+                      >
+                        {inspection.status}
                       </span>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -313,9 +299,6 @@ const AdminDashboard = () => {
                     Role
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Actions
                   </th>
                 </tr>
@@ -329,13 +312,8 @@ const AdminDashboard = () => {
                     <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                       {user.email}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
-                        {user.role.replace("_", " ").toUpperCase()}
-                      </span>
-                    </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                      {user.created_at}
+                      {user.role}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex space-x-2">
@@ -380,6 +358,7 @@ const AdminDashboard = () => {
             <div className="p-6 border-b">
               <VehicleEditForm
                 vehicle={editingVehicle}
+                users={allUsers}
                 onSave={saveVehicle}
                 onCancel={() => setEditingVehicle(null)}
               />
@@ -468,6 +447,9 @@ const AdminDashboard = () => {
             <div className="p-6 border-b">
               <InspectionEditForm
                 inspection={editingInspection}
+                vehicles={allVehicles}
+                stations={allStations}
+                users={allUsers}
                 onSave={saveInspection}
                 onCancel={() => setEditingInspection(null)}
               />
@@ -482,9 +464,6 @@ const AdminDashboard = () => {
                     Vehicle
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Inspector
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Station
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
@@ -492,9 +471,6 @@ const AdminDashboard = () => {
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Status
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Result
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Actions
@@ -505,9 +481,6 @@ const AdminDashboard = () => {
                 {allInspections.map((inspection) => {
                   const vehicle = allVehicles.find(
                     (v) => v.id === inspection.vehicle_id
-                  );
-                  const inspector = allUsers.find(
-                    (u) => u.id === inspection.inspector_id
                   );
                   const station = allStations.find(
                     (s) => s.id === inspection.station_id
@@ -520,13 +493,10 @@ const AdminDashboard = () => {
                           : "Unknown"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                        {inspector?.name || "Unknown"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                         {station?.name || "Unknown"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                        {new Date(inspection.date).toLocaleDateString()}
+                        {inspection.date}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
@@ -538,19 +508,6 @@ const AdminDashboard = () => {
                         >
                           {inspection.status}
                         </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {inspection.result && (
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs font-medium ${
-                              inspection.result === "passed"
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {inspection.result.toUpperCase()}
-                          </span>
-                        )}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex space-x-2">
@@ -613,9 +570,6 @@ const AdminDashboard = () => {
                     Location
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Created
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                     Actions
                   </th>
                 </tr>
@@ -628,9 +582,6 @@ const AdminDashboard = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-gray-500">
                       {station.location}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-gray-500">
-                      {station.created_at}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex space-x-2">

@@ -1,8 +1,13 @@
-// src/components/forms/InspectionEditForm.jsx
 import React, { useState } from "react";
-import { mockUsers, vehiclesData, stationsData } from "../../data/mockData";
 
-const InspectionEditForm = ({ inspection, onSave, onCancel }) => {
+const InspectionEditForm = ({
+  inspection,
+  vehicles = [],
+  stations = [],
+  users = [],
+  onSave,
+  onCancel,
+}) => {
   const [formData, setFormData] = useState(
     inspection || {
       vehicle_id: "",
@@ -28,7 +33,7 @@ const InspectionEditForm = ({ inspection, onSave, onCancel }) => {
           className="px-3 py-2 border rounded"
         >
           <option value="">Select Vehicle</option>
-          {vehiclesData.map((vehicle) => (
+          {vehicles.map((vehicle) => (
             <option key={vehicle.id} value={vehicle.id}>
               {vehicle.make} {vehicle.model} ({vehicle.year})
             </option>
@@ -42,7 +47,7 @@ const InspectionEditForm = ({ inspection, onSave, onCancel }) => {
           className="px-3 py-2 border rounded"
         >
           <option value="">Select Station</option>
-          {stationsData.map((station) => (
+          {stations.map((station) => (
             <option key={station.id} value={station.id}>
               {station.name}
             </option>
@@ -59,7 +64,7 @@ const InspectionEditForm = ({ inspection, onSave, onCancel }) => {
           className="px-3 py-2 border rounded"
         >
           <option value="">Select Inspector</option>
-          {mockUsers
+          {users
             .filter((u) => u.role === "inspection_staff")
             .map((user) => (
               <option key={user.id} value={user.id}>

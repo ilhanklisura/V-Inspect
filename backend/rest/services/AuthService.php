@@ -26,7 +26,11 @@ class AuthService extends BaseService {
         }
 
         $data['password'] = password_hash($data['password'], PASSWORD_BCRYPT);
-        $data['role'] = Roles::VEHICLE_OWNER;
+        
+        // Set role if provided, otherwise default to vehicle owner
+        if (!isset($data['role']) || !in_array($data['role'], [Roles::VEHICLE_OWNER, Roles::INSPECTION_STAFF, Roles::ADMIN])) {
+            $data['role'] = Roles::VEHICLE_OWNER;
+        }
 
         $user = parent::add($data);
         unset($user['password']);

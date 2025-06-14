@@ -1,7 +1,6 @@
-// src/components/forms/AddVehicleForm.jsx
 import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import { vehiclesData, nextVehicleId } from "../../data/mockData";
+import { vehicleService } from "../../services/vehicleService";
 
 const AddVehicleForm = ({ onSave, onCancel }) => {
   const { user } = useAuth();
@@ -25,7 +24,7 @@ const AddVehicleForm = ({ onSave, onCancel }) => {
     return newErrors;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -33,7 +32,6 @@ const AddVehicleForm = ({ onSave, onCancel }) => {
     }
 
     const newVehicle = {
-      id: nextVehicleId++,
       owner_id: user.id,
       make: formData.make,
       model: formData.model,
@@ -41,11 +39,15 @@ const AddVehicleForm = ({ onSave, onCancel }) => {
       year: parseInt(formData.year),
       document_path:
         formData.document_path || `/docs/${formData.make.toLowerCase()}.pdf`,
-      created_at: new Date().toISOString().split("T")[0],
     };
 
-    vehiclesData.push(newVehicle);
-    onSave(newVehicle);
+    try {
+      const createdVehicle = await vehicleService.createVehicle(newVehicle);
+      onSave(createdVehicle);
+    } catch (error) {
+      console.error("Error creating vehicle:", error);
+      setErrors({ submit: error.message || "Failed to create vehicle" });
+    }
   };
 
   return (
@@ -122,6 +124,12 @@ const AddVehicleForm = ({ onSave, onCancel }) => {
           )}
         </div>
       </div>
+
+      {errors.submit && (
+        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          {errors.submit}
+        </div>
+      )}
 
       <div className="flex space-x-3 mt-6">
         <button

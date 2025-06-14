@@ -1,4 +1,3 @@
-// src/components/ui/DataTable.jsx
 import React from "react";
 
 const DataTable = ({

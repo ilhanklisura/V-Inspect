@@ -1,8 +1,8 @@
-// src/components/dashboard/VehicleOwnerDashboard.jsx
 import React, { useState, useEffect } from "react";
 import { Plus, Calendar } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
-import { vehiclesData, inspectionsData } from "../../data/mockData";
+import { vehicleService } from "../../services/vehicleService";
+import { inspectionService } from "../../services/inspectionService";
 import StatsCard from "../ui/StatsCard";
 import AddVehicleForm from "../forms/AddVehicleForm";
 import ScheduleInspectionForm from "../forms/ScheduleInspectionForm";
@@ -14,13 +14,21 @@ const VehicleOwnerDashboard = () => {
   const [showAddVehicle, setShowAddVehicle] = useState(false);
   const [showScheduleInspection, setShowScheduleInspection] = useState(false);
 
-  const refreshData = () => {
-    const vehicles = vehiclesData.filter((v) => v.owner_id === user.id);
-    const inspections = inspectionsData.filter((i) =>
-      vehicles.some((v) => v.id === i.vehicle_id)
-    );
-    setUserVehicles(vehicles);
-    setUserInspections(inspections);
+  const refreshData = async () => {
+    try {
+      // Load user's vehicles from API
+      const vehicles = await vehicleService.getMyVehicles();
+      setUserVehicles(vehicles);
+
+      // Load user's inspections from API
+      const userInspections = await inspectionService.getMyInspections();
+      setUserInspections(userInspections);
+    } catch (error) {
+      console.error("Error loading data:", error);
+      // Fallback to empty arrays if API fails
+      setUserVehicles([]);
+      setUserInspections([]);
+    }
   };
 
   useEffect(() => {

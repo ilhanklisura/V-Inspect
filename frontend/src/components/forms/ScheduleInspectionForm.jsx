@@ -1,11 +1,6 @@
-// src/components/forms/ScheduleInspectionForm.jsx
-import React, { useState } from "react";
-import {
-  mockUsers,
-  inspectionsData,
-  stationsData,
-  nextInspectionId,
-} from "../../data/mockData";
+import React, { useState, useEffect } from "react";
+import { inspectionService } from "../../services/inspectionService";
+import { stationService } from "../../services/stationService";
 
 const ScheduleInspectionForm = ({ vehicles, onSave, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -14,6 +9,19 @@ const ScheduleInspectionForm = ({ vehicles, onSave, onCancel }) => {
     date: "",
   });
   const [errors, setErrors] = useState({});
+  const [stations, setStations] = useState([]);
+
+  useEffect(() => {
+    const loadStations = async () => {
+      try {
+        const stationsData = await stationService.getStations();
+        setStations(stationsData);
+      } catch (error) {
+        console.error("Error loading stations:", error);
+      }
+    };
+    loadStations();
+  }, []);
 
   const validateForm = () => {
     const newErrors = {};
@@ -26,29 +34,29 @@ const ScheduleInspectionForm = ({ vehicles, onSave, onCancel }) => {
     return newErrors;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
-    const inspectors = mockUsers.filter((u) => u.role === "inspection_staff");
-    const inspector = inspectors[Math.floor(Math.random() * inspectors.length)];
-
     const newInspection = {
-      id: nextInspectionId++,
       vehicle_id: parseInt(formData.vehicle_id),
       station_id: parseInt(formData.station_id),
-      inspector_id: inspector.id,
       date: formData.date,
       status: "scheduled",
-      result: null,
-      created_at: new Date().toISOString().split("T")[0],
     };
 
-    inspectionsData.push(newInspection);
-    onSave(newInspection);
+    try {
+      const createdInspection = await inspectionService.createInspection(
+        newInspection
+      );
+      onSave(createdInspection);
+    } catch (error) {
+      console.error("Error creating inspection:", error);
+      setErrors({ submit: error.message || "Failed to schedule inspection" });
+    }
   };
 
   return (
@@ -93,7 +101,7 @@ const ScheduleInspectionForm = ({ vehicles, onSave, onCancel }) => {
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="">Select a station</option>
-            {stationsData.map((station) => (
+            {stations.map((station) => (
               <option key={station.id} value={station.id}>
                 {station.name} - {station.location}
               </option>
@@ -120,6 +128,12 @@ const ScheduleInspectionForm = ({ vehicles, onSave, onCancel }) => {
           )}
         </div>
       </div>
+
+      {errors.submit && (
+        <div className="mt-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+          {errors.submit}
+        </div>
+      )}
 
       <div className="flex space-x-3 mt-6">
         <button

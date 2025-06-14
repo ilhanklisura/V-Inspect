@@ -22,6 +22,8 @@ class UserService extends BaseService {
         }
 
         $entity['password'] = password_hash($entity['password'], PASSWORD_DEFAULT);
-        return parent::add($entity);
+        $user = parent::add($entity);
+        unset($user['password']); // Don't return password in response
+        return $user;
     }
 }

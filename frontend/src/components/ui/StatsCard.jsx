@@ -1,4 +1,3 @@
-// src/components/ui/StatsCard.jsx
 import React from "react";
 
 const StatsCard = ({ title, value, color = "blue" }) => {

@@ -1,8 +1,6 @@
-// src/components/forms/VehicleEditForm.jsx
 import React, { useState } from "react";
-import { mockUsers } from "../../data/mockData";
 
-const VehicleEditForm = ({ vehicle, onSave, onCancel }) => {
+const VehicleEditForm = ({ vehicle, users = [], onSave, onCancel }) => {
   const [formData, setFormData] = useState(
     vehicle || {
       make: "",
@@ -58,7 +56,7 @@ const VehicleEditForm = ({ vehicle, onSave, onCancel }) => {
           className="px-3 py-2 border rounded"
         >
           <option value="">Select Owner</option>
-          {mockUsers
+          {users
             .filter((u) => u.role === "vehicle_owner")
             .map((user) => (
               <option key={user.id} value={user.id}>

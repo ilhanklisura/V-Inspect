@@ -27,7 +27,7 @@ Flight::route('GET /vehicles', function () {
 Flight::route('GET /vehicles/my', function () {
     AuthMiddleware::authorizeRole(Roles::VEHICLE_OWNER);
     $user = Flight::get('user');
-    Flight::json(Flight::vehicle_service()->get_by_owner($user['user_id']));
+    Flight::json(Flight::vehicle_service()->get_by_owner($user['id']));
 });
 
 /**
@@ -55,7 +55,7 @@ Flight::route('POST /vehicles', function () {
     $data = Flight::request()->data->getData();
 
     if ($user['role'] === Roles::VEHICLE_OWNER) {
-        $data['owner_id'] = $user['user_id'];
+        $data['owner_id'] = $user['id'];
     } elseif (!isset($data['owner_id'])) {
         Flight::halt(400, "Admin must provide owner_id.");
     }

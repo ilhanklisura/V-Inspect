@@ -1,4 +1,3 @@
-// src/components/navigation/Navigation.jsx
 import React, { useState } from "react";
 import { Car, User, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";

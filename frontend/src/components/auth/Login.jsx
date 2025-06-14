@@ -1,4 +1,3 @@
-// src/components/auth/Login.jsx
 import React, { useState } from "react";
 import { Car } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
@@ -9,8 +8,9 @@ const Login = ({ onShowRegister }) => {
   const [error, setError] = useState("");
   const { login } = useAuth();
 
-  const handleSubmit = () => {
-    if (login(email, password)) {
+  const handleSubmit = async () => {
+    const success = await login(email, password);
+    if (success) {
       setError("");
     } else {
       setError("Invalid credentials");
@@ -74,13 +74,13 @@ const Login = ({ onShowRegister }) => {
           <p className="font-medium mb-2">Demo Accounts:</p>
           <div className="space-y-1 text-xs">
             <p>
-              <strong>Owner:</strong> owner@test.com / password
+              <strong>Owner:</strong> ik@gmail.com / ik12345
             </p>
             <p>
-              <strong>Inspector:</strong> inspector@test.com / password
+              <strong>Inspector:</strong> inspector@vinspect.com / 123456
             </p>
             <p>
-              <strong>Admin:</strong> admin@test.com / password
+              <strong>Admin:</strong> admin@vinspect.com / 123456
             </p>
           </div>
         </div>

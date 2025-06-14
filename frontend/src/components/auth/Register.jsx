@@ -1,7 +1,6 @@
-// src/components/auth/Register.jsx
 import React, { useState } from "react";
 import { Shield, UserPlus } from "lucide-react";
-import { mockUsers, nextUserId } from "../../data/mockData";
+import { authService } from "../../services/authService";
 
 const Register = ({ onBackToLogin }) => {
   const [formData, setFormData] = useState({
@@ -13,6 +12,7 @@ const Register = ({ onBackToLogin }) => {
   });
   const [errors, setErrors] = useState({});
   const [success, setSuccess] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const validateForm = () => {
     const newErrors = {};
@@ -21,8 +21,6 @@ const Register = ({ onBackToLogin }) => {
     if (!formData.email.trim()) newErrors.email = "Email is required";
     else if (!/\S+@\S+\.\S+/.test(formData.email))
       newErrors.email = "Invalid email format";
-    else if (mockUsers.find((u) => u.email === formData.email))
-      newErrors.email = "Email already exists";
 
     if (!formData.password) newErrors.password = "Password is required";
     else if (formData.password.length < 6)
@@ -35,7 +33,7 @@ const Register = ({ onBackToLogin }) => {
     return newErrors;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     const newErrors = validateForm();
 
     if (Object.keys(newErrors).length > 0) {
@@ -43,21 +41,34 @@ const Register = ({ onBackToLogin }) => {
       return;
     }
 
-    const newUser = {
-      id: nextUserId++,
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      role: formData.role,
-      created_at: new Date().toISOString().split("T")[0],
-    };
+    setLoading(true);
+    setErrors({});
 
-    mockUsers.push(newUser);
-    setSuccess(true);
+    try {
+      const registrationData = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role,
+      };
 
-    setTimeout(() => {
-      onBackToLogin();
-    }, 2000);
+      await authService.register(registrationData);
+      setSuccess(true);
+
+      setTimeout(() => {
+        onBackToLogin();
+      }, 2000);
+    } catch (error) {
+      console.error("Registration failed:", error);
+      setErrors({
+        submit:
+          error.error ||
+          error.message ||
+          "Registration failed. Please try again.",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (success) {
@@ -101,6 +112,7 @@ const Register = ({ onBackToLogin }) => {
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="John Doe"
+              disabled={loading}
             />
             {errors.name && (
               <p className="text-red-600 text-sm mt-1">{errors.name}</p>
@@ -119,6 +131,7 @@ const Register = ({ onBackToLogin }) => {
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="john@example.com"
+              disabled={loading}
             />
             {errors.email && (
               <p className="text-red-600 text-sm mt-1">{errors.email}</p>
@@ -135,6 +148,7 @@ const Register = ({ onBackToLogin }) => {
                 setFormData({ ...formData, role: e.target.value })
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+              disabled={loading}
             >
               <option value="vehicle_owner">Vehicle Owner</option>
               <option value="inspection_staff">Inspection Staff</option>
@@ -153,6 +167,7 @@ const Register = ({ onBackToLogin }) => {
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="Min 6 characters"
+              disabled={loading}
             />
             {errors.password && (
               <p className="text-red-600 text-sm mt-1">{errors.password}</p>
@@ -171,6 +186,7 @@ const Register = ({ onBackToLogin }) => {
               }
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
               placeholder="Repeat password"
+              disabled={loading}
             />
             {errors.confirmPassword && (
               <p className="text-red-600 text-sm mt-1">
@@ -179,16 +195,24 @@ const Register = ({ onBackToLogin }) => {
             )}
           </div>
 
+          {errors.submit && (
+            <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+              {errors.submit}
+            </div>
+          )}
+
           <button
             onClick={handleSubmit}
-            className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-200"
+            disabled={loading}
+            className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Create Account
+            {loading ? "Creating Account..." : "Create Account"}
           </button>
 
           <button
             onClick={onBackToLogin}
-            className="w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition duration-200"
+            disabled={loading}
+            className="w-full bg-gray-300 text-gray-700 py-2 px-4 rounded-md hover:bg-gray-400 transition duration-200 disabled:opacity-50"
           >
             Back to Login
           </button>

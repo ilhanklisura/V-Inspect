@@ -27,7 +27,7 @@ Flight::route('GET /inspections', function () {
 Flight::route('GET /inspections/my', function () {
     AuthMiddleware::authorizeRole(Roles::VEHICLE_OWNER);
     $user = Flight::get('user');
-    Flight::json(Flight::inspection_service()->get_by_vehicle_owner($user['user_id']));
+    Flight::json(Flight::inspection_service()->get_by_vehicle_owner($user['id']));
 });
 
 /**
@@ -51,7 +51,7 @@ Flight::route('GET /inspections/@id', function ($id) {
         $user['role'] !== Roles::ADMIN &&
         $user['role'] !== Roles::INSPECTION_STAFF &&
         $inspection['vehicle_id'] &&
-        !in_array($inspection['vehicle_id'], array_column(Flight::inspection_service()->get_by_vehicle_owner($user['user_id']), 'vehicle_id'))
+        !in_array($inspection['vehicle_id'], array_column(Flight::inspection_service()->get_by_vehicle_owner($user['id']), 'vehicle_id'))
     ) {
         Flight::halt(403, "Not allowed to view this inspection.");
     }
@@ -62,7 +62,7 @@ Flight::route('GET /inspections/@id', function ($id) {
 /**
  * @OA\Post(
  *     path="/inspections",
- *     summary="Schedule inspection (vehicle owner only)",
+ *     summary="Schedule inspection (vehicle owner, admin, or staff)",
  *     tags={"Inspections"},
  *     security={{"bearerAuth":{}}},
  *     @OA\RequestBody(
@@ -70,25 +70,34 @@ Flight::route('GET /inspections/@id', function ($id) {
  *             required={"vehicle_id", "station_id", "date"},
  *             @OA\Property(property="vehicle_id", type="integer"),
  *             @OA\Property(property="station_id", type="integer"),
- *             @OA\Property(property="date", type="string", format="date-time")
+ *             @OA\Property(property="date", type="string", format="date-time"),
+ *             @OA\Property(property="inspector_id", type="integer"),
+ *             @OA\Property(property="status", type="string")
  *         )
  *     ),
  *     @OA\Response(response=200, description="Inspection scheduled")
  * )
  */
 Flight::route('POST /inspections', function () {
-    AuthMiddleware::authorizeRole(Roles::VEHICLE_OWNER);
+    AuthMiddleware::authorizeRoles([Roles::VEHICLE_OWNER, Roles::ADMIN, Roles::INSPECTION_STAFF]);
     $user = Flight::get('user');
     $data = Flight::request()->data->getData();
 
-    $vehicles = Flight::vehicle_service()->get_by_owner($user['user_id']);
-    $owned_vehicle_ids = array_column($vehicles, 'id');
+    // If user is vehicle owner, check if they own the vehicle
+    if ($user['role'] === Roles::VEHICLE_OWNER) {
+        $vehicles = Flight::vehicle_service()->get_by_owner($user['id']);
+        $owned_vehicle_ids = array_column($vehicles, 'id');
 
-    if (!in_array($data['vehicle_id'], $owned_vehicle_ids)) {
-        Flight::halt(403, "You don't own this vehicle.");
+        if (!in_array($data['vehicle_id'], $owned_vehicle_ids)) {
+            Flight::halt(403, "You don't own this vehicle.");
+        }
     }
 
-    $data['status'] = 'scheduled';
+    // Set default status if not provided
+    if (!isset($data['status'])) {
+        $data['status'] = 'scheduled';
+    }
+
     Flight::json([
         'message' => 'Inspection scheduled.',
         'data' => Flight::inspection_service()->add($data)

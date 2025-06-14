@@ -1,11 +1,8 @@
-// src/components/dashboard/InspectionStaffDashboard.jsx
 import React, { useState, useEffect } from "react";
 import { useAuth } from "../../hooks/useAuth";
-import {
-  inspectionsData,
-  vehiclesData,
-  stationsData,
-} from "../../data/mockData";
+import { inspectionService } from "../../services/inspectionService";
+import { vehicleService } from "../../services/vehicleService";
+import { stationService } from "../../services/stationService";
 import StatsCard from "../ui/StatsCard";
 
 const InspectionStaffDashboard = () => {
@@ -13,31 +10,43 @@ const InspectionStaffDashboard = () => {
   const [assignedInspections, setAssignedInspections] = useState([]);
   const [inspectionVehicles, setInspectionVehicles] = useState([]);
 
-  const refreshData = () => {
-    const inspections = inspectionsData.filter(
-      (i) => i.inspector_id === user.id
-    );
-    const vehicles = inspections.map((inspection) => ({
-      ...inspection,
-      vehicle: vehiclesData.find((v) => v.id === inspection.vehicle_id),
-      station: stationsData.find((s) => s.id === inspection.station_id),
-    }));
-    setAssignedInspections(inspections);
-    setInspectionVehicles(vehicles);
+  const refreshData = async () => {
+    try {
+      // Get all inspections (inspection staff can see all)
+      const inspections = await inspectionService.getInspections();
+      setAssignedInspections(inspections);
+
+      // Get vehicles and stations data for each inspection
+      const vehicles = await vehicleService.getVehicles();
+      const stations = await stationService.getStations();
+
+      const inspectionVehicles = inspections.map((inspection) => ({
+        ...inspection,
+        vehicle: vehicles.find((v) => v.id === inspection.vehicle_id),
+        station: stations.find((s) => s.id === inspection.station_id),
+      }));
+
+      setInspectionVehicles(inspectionVehicles);
+    } catch (error) {
+      console.error("Error loading inspection data:", error);
+      setAssignedInspections([]);
+      setInspectionVehicles([]);
+    }
   };
 
   useEffect(() => {
     refreshData();
   }, [user.id]);
 
-  const completeInspection = (inspectionId, result) => {
-    const inspectionIndex = inspectionsData.findIndex(
-      (i) => i.id === inspectionId
-    );
-    if (inspectionIndex !== -1) {
-      inspectionsData[inspectionIndex].status = "completed";
-      inspectionsData[inspectionIndex].result = result;
-      refreshData();
+  const completeInspection = async (inspectionId, result) => {
+    try {
+      await inspectionService.updateInspection(inspectionId, {
+        status: "completed",
+        result: result,
+      });
+      refreshData(); // Refresh data after update
+    } catch (error) {
+      console.error("Error completing inspection:", error);
     }
   };
 

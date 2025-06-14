@@ -1,6 +1,5 @@
-// src/components/auth/AuthProvider.jsx
 import React, { useState, createContext, useEffect } from "react";
-import { mockUsers } from "../../data/mockData";
+import { authService } from "../../services/authService";
 
 export const AuthContext = createContext();
 
@@ -9,31 +8,28 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    const userData = localStorage.getItem("user");
-    if (token && userData) {
-      setUser(JSON.parse(userData));
+    if (authService.isAuthenticated()) {
+      const userData = authService.getCurrentUser();
+      if (userData) {
+        setUser(userData);
+      }
     }
     setLoading(false);
   }, []);
 
-  const login = (email, password) => {
-    const foundUser = mockUsers.find(
-      (u) => u.email === email && u.password === password
-    );
-    if (foundUser) {
-      const token = `mock-jwt-token-${foundUser.id}`;
-      localStorage.setItem("token", token);
-      localStorage.setItem("user", JSON.stringify(foundUser));
-      setUser(foundUser);
+  const login = async (email, password) => {
+    try {
+      const { user: userData } = await authService.login({ email, password });
+      setUser(userData);
       return true;
+    } catch (error) {
+      console.error("Login failed:", error);
+      return false;
     }
-    return false;
   };
 
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    authService.logout();
     setUser(null);
   };
 

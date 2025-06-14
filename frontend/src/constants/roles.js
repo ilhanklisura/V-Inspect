@@ -1,5 +1,3 @@
-// src/constants/roles.js
-
 export const USER_ROLES = {
   VEHICLE_OWNER: "vehicle_owner",
   INSPECTION_STAFF: "inspection_staff",

@@ -28,7 +28,7 @@ Flight::route('GET /users', function () {
 Flight::route('GET /users/@id', function ($id) {
     AuthMiddleware::authenticate();
     $user = Flight::get('user');
-    if ($user['role'] !== Roles::ADMIN && $user['user_id'] != $id) {
+    if ($user['role'] !== Roles::ADMIN && $user['id'] != $id) {
         Flight::halt(403, "You can only view your own profile.");
     }
     Flight::json(Flight::user_service()->get_by_id($id));
