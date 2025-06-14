@@ -1,5 +1,9 @@
 <?php
 
+if (php_sapi_name() === 'cli') {
+    return;
+}
+
 require './vendor/autoload.php';
 
 // CORS headers

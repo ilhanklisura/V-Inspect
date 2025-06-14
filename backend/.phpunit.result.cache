@@ -1,0 +1,1 @@
+{"version":1,"defects":{"AuthTest::testLoginReturnsToken":7,"UserTest::testAdminCanGetUserList":8},"times":{"AuthTest::testSuccessfulRegistration":0.115,"AuthTest::testLoginReturnsToken":0.217,"UserTest::testAdminCanGetUserList":0.278,"VehicleTest::testOwnerCanAddVehicle":0.086}}

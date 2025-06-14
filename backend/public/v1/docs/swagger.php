@@ -3,12 +3,12 @@
 require __DIR__ . '/../../../vendor/autoload.php';
 
 define('LOCALSERVER', 'http://localhost/V-Inspect/backend/');
-define('PRODSERVER', 'https://add-production-server-after-deployment/backend/');
+define('PRODSERVER', 'https://vinspect-backend-6lgv6.ondigitalocean.app/');
 
 if($_SERVER['SERVER_NAME'] == 'localhost' || $_SERVER['SERVER_NAME'] == '127.0.0.1'){
     define('BASE_URL', 'http://localhost/V-Inspect/backend/');
 } else {
-    //define('BASE_URL', 'https://add-production-server-after-deployment/backend/');
+    define('BASE_URL', 'https://vinspect-backend-6lgv6.ondigitalocean.app/');
 }
 
 $openapi = \OpenApi\Generator::scan([

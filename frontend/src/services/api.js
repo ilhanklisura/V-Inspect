@@ -1,8 +1,8 @@
 import axios from "axios";
 
 // Backend URLs
-const LOCAL_API_URL = "http://localhost:8888/V-Inspect-main/backend";
-const PRODUCTION_API_URL = "https://your-domain.com/backend"; // Replace with your Digital Ocean domain
+const LOCAL_API_URL = "http://localhost/V-Inspect/backend";
+const PRODUCTION_API_URL = "https://vinspect-backend-6lgv6.ondigitalocean.app/";
 
 // Determine which API URL to use
 const isProduction =

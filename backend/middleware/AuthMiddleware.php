@@ -4,9 +4,18 @@ use Firebase\JWT\Key;
 
 class AuthMiddleware {
     public static function authenticate() {
-        $headers = function_exists('apache_request_headers')
-            ? apache_request_headers()
-            : getallheaders();
+        $headers = [];
+
+        if (function_exists('getallheaders')) {
+            $headers = getallheaders();
+        } else {
+            foreach ($_SERVER as $name => $value) {
+                if (str_starts_with($name, 'HTTP_')) {
+                    $key = str_replace('_', '-', substr($name, 5));
+                    $headers[$key] = $value;
+                }
+            }
+        }
 
         if (!isset($headers['Authorization'])) {
             Flight::halt(401, "Missing token");
