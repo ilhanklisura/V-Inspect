@@ -29,10 +29,10 @@ jobs:
           cd backend
           composer install --no-progress
 
-      - name: Run PHPUnit tests
+      - name: Run curlTest
         run: |
-          cd backend
-          ./vendor/bin/phpunit
+          cd backend/rest/tests
+          php curlTest.php || exit 1
 
   ci-frontend:
     name: CI - Frontend
